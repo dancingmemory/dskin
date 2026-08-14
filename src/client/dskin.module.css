@@ -116,6 +116,13 @@
   animation: selected-bounce 0.5s steps(2, end) infinite;
 }
 
+/* while hanging upside down the sprite sits ABOVE its box, so the star
+   moves below the cat instead of overlapping its head */
+.pixelPet[data-pet-state='hang'] .pixelPetSelected {
+  top: auto;
+  bottom: -18px;
+}
+
 .pixelPetSelected[hidden] {
   display: none;
 }
@@ -214,6 +221,12 @@
   line-height: 1;
   pointer-events: none;
   animation: thinking-float 1.2s steps(4, end) infinite;
+}
+
+/* hanging cats show the thought marker below too */
+.pixelPet[data-pet-state='hang'][data-pet-thinking='1']::after {
+  top: auto;
+  bottom: -14px;
 }
 
 @keyframes thinking-float {

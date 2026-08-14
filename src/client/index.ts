@@ -66,9 +66,9 @@ const SELECT_MS = 10000
 /** How long a thought bubble stays on screen. */
 const QUOTE_SHOW_MS = 8000
 
-/** Thought frequency: a random delay between these bounds, mean ≈ 30 min. */
-export const DSKIN_THOUGHT_MIN_MS = 20 * 60 * 1000
-export const DSKIN_THOUGHT_MAX_MS = 40 * 60 * 1000
+/** Thought frequency: a random delay between these bounds, mean ≈ 20 min. */
+export const DSKIN_THOUGHT_MIN_MS = 15 * 60 * 1000
+export const DSKIN_THOUGHT_MAX_MS = 25 * 60 * 1000
 
 let thoughtMin = DSKIN_THOUGHT_MIN_MS
 let thoughtMax = DSKIN_THOUGHT_MAX_MS
@@ -101,12 +101,12 @@ const HEART_INTERVAL = 1400
 const HANG_Y = 2
 
 /**
- * Where the hanging cat's element is pinned (px from the top). The sprite is
- * rotated 180° about `center 4px`, which shifts it ~23px ABOVE its box — pin
- * it 24px down so the upside-down cat is fully visible and never clipped by
- * the top edge of the viewport.
+ * Where the hanging cat's element is pinned (px from the top). The 180°
+ * rotation plus the sway animation pushes the sprite's bounding box ~32px
+ * above the element — pin it 34px down so the upside-down cat (and its sway)
+ * is fully visible and never clipped by the top edge.
  */
-const HANG_PIN_Y = 24
+const HANG_PIN_Y = 34
 
 /** Pull distance (px) below the latch line to un-hang back into a drag. */
 const UNHANG_DRAG = 40
@@ -447,6 +447,9 @@ class PixelPet {
     this.lastPointerX = e.clientX
     this.lastPointerY = e.clientY
     this.setState('drag')
+    // top-based positioning from here on — drop the CSS bottom anchor so the
+    // element doesn't stretch between top and bottom
+    this.el.style.bottom = 'auto'
     this.el.style.top = `${Math.round(rect.top)}px`
     this.y = rect.top
     try {
