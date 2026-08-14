@@ -1,0 +1,36 @@
+name: star-chart
+
+on:
+  schedule:
+    - cron: '17 3 * * *'   # daily at 03:17 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-star-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Regenerate star-trend.svg
+        run: python3 scripts/gen-star-chart.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit the updated chart
+        run: |
+          if git diff --quiet assets/star-trend.svg; then
+            echo "chart unchanged"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets/star-trend.svg
+            git commit -m "chore: auto-update star-trend chart"
+            git push
+          fi

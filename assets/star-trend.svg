@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 440" font-family="PingFang SC, Hiragino Sans GB, sans-serif">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8d4f2"/><stop offset="1" stop-color="#eef6fc"/></linearGradient></defs>
+<rect width="900" height="440" fill="url(#sky)"/>
+<rect x="66" y="80" width="620" height="268" fill="#4a3323"/>
+<rect x="60" y="74" width="620" height="268" fill="#fffdf7" stroke="#2e3a59" stroke-width="3"/>
+<line x1="116" y1="157.36" x2="656" y2="157.36" stroke="#dde1ec" stroke-width="2"/>
+<line x1="116" y1="220.72" x2="656" y2="220.72" stroke="#dde1ec" stroke-width="2"/>
+<line x1="116" y1="94" x2="116" y2="286" stroke="#2e3a59" stroke-width="3"/>
+<line x1="116" y1="286" x2="656" y2="286" stroke="#2e3a59" stroke-width="3"/>
+<text x="122" y="114" font-size="16" fill="#2e3a59">stars</text>
+<text x="46" y="308" font-size="16" fill="#2e3a59">0</text>
+<text x="540" y="308" font-size="16" fill="#2e3a59">time →</text>
+<path d="M116.0 266.8 H116.0 V247.6 H311.3 H311.3 V228.4 H349.2 H349.2 V209.2 H353.9 H353.9 V190.0 H465.8 H465.8 V170.8 H501.1 H501.1 V151.6 H560.9 H560.9 V132.4 H579.8 H579.8 V113.2 H637.7 H637.7 V94.0 H656.0" fill="none" stroke="#f5a35c" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="116.0" cy="266.8" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="311.3333767842013" cy="247.6" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="349.1682200351952" cy="228.4" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="353.88437724043536" cy="209.2" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="465.84031806035324" cy="190.0" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="501.14110669360616" cy="170.8" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="560.9377566316887" cy="151.60000000000002" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="579.8375806556736" cy="132.39999999999998" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="637.7336896304504" cy="113.19999999999999" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<circle cx="656.0" cy="94.0" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>
+<text x="560" y="104" font-size="15" font-weight="bold" fill="#b06e00">10 ⭐</text>
+<circle cx="34" cy="28" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="1.5"/>
+<circle cx="46" cy="28" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="1.5"/>
+<circle cx="58" cy="28" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="1.5"/>
+<text x="76" y="36" font-size="24" font-weight="bold" fill="#2e3a59">DSKIN Star 趋势图</text>
+<text x="76" y="58" font-size="14" fill="#6e7a92">star history · 自动更新 / auto-updates daily</text>
+<text x="68" y="374" font-size="15" fill="#4a4a4a">共 10 颗星 · 图表由 GitHub Actions 每日自动重绘</text>
+</svg>

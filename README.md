@@ -124,12 +124,12 @@ DSKIN **只在你自己的 DSH Web 应用页面内运行**（默认 `http://127.
 
 ## ⭐ Star 趋势 / Star History
 
-![star-trend](assets/star-trend.png)
+![star-trend](assets/star-trend.svg)
 
-> GitHub 近期限制了 star 数据公开接口，趋势图暂时以占位形式展示；
-> 等收到第一颗 ⭐ 后，会切换为 star-history 实时曲线。
-> *GitHub recently restricted the public stargazers API, so the chart shows a
-> placeholder for now; once the first ⭐ arrives it switches to a live curve.*
+> 图表由 **GitHub Actions 每日自动重绘**并提交到本仓库（脚本 `scripts/gen-star-chart.py`），
+> 随 ⭐ 增长实时更新。
+> *The chart is regenerated daily by GitHub Actions (scripts/gen-star-chart.py) and
+> auto-committed, so it tracks the ⭐ count automatically.*
 
 喜欢 DSKIN？点个 ⭐ 支持一下。
 *Like DSKIN? Hit ⭐ and help the curve grow.*
