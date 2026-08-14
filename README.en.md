@@ -14,6 +14,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/dancingmemory/dskin" alt="license"></a>
   <a href="https://github.com/dancingmemory/dskin"><img src="https://img.shields.io/github/v/tag/dancingmemory/dskin?label=version" alt="version"></a>
   <img src="https://img.shields.io/badge/platform-Web%20UI-4a90d9" alt="platform">
+  <img src="https://img.shields.io/github/stars/dancingmemory/dskin?style=social&label=Stars" alt="stars">
 </p>
 
 ---
@@ -60,6 +61,9 @@ corner lets you toggle the palette to pick any kitten you like.
 ### 🎮 Controls
 
 ![Cat Palette](assets/cat-palette.png)
+
+> 点击小猫选中它（头顶出现 ★），再点品种按钮换色；★ 10 秒后自动消失。
+> *Click a kitten to select it (★ appears), then pick a breed; the ★ auto-clears after 10s.*
 *Pixel kitten selector panel*
 
 ![Paw Button](assets/paw-button.png)
@@ -128,10 +132,14 @@ bottom edge. To revert: `dsh plugin --profile web remove dskin` and restart.
 
 ## ⭐ Star History
 
-![star-history](https://api.star-history.com/svg?repos=dancingmemory/dskin&type=Date)
+![star-trend](assets/star-trend.png)
 
-> Like DSKIN? Hit ⭐ and watch the curve grow.
-> *喜欢 DSKIN？点个 ⭐ 支持一下，趋势图会自动更新。*
+> GitHub recently restricted the public stargazers API, so the chart shows a
+> placeholder for now; once the first ⭐ arrives it switches to a live curve.
+> *GitHub 近期限制了 star 数据公开接口，趋势图暂时以占位形式展示；等收到第一颗 ⭐ 后会切换为实时曲线。*
+
+Like DSKIN? Hit ⭐ and help the curve grow.
+*喜欢 DSKIN？点个 ⭐ 支持一下。*
 
 ## 🛠️ Development
 

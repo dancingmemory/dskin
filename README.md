@@ -14,6 +14,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/dancingmemory/dskin" alt="license"></a>
   <a href="https://github.com/dancingmemory/dskin"><img src="https://img.shields.io/github/v/tag/dancingmemory/dskin?label=version" alt="version"></a>
   <img src="https://img.shields.io/badge/平台-Web%20UI-4a90d9" alt="platform">
+  <img src="https://img.shields.io/github/stars/dancingmemory/dskin?style=social&label=Stars" alt="stars">
 </p>
 
 ---
@@ -114,10 +115,15 @@ dsh web        # 安装后重启，让新插件行进入加载图谱
 
 ## ⭐ Star 趋势 / Star History
 
-![star-history](https://api.star-history.com/svg?repos=dancingmemory/dskin&type=Date)
+![star-trend](assets/star-trend.png)
 
-> 喜欢 DSKIN？点个 ⭐ 支持一下，趋势图会自动更新。
-> *Like DSKIN? Hit ⭐ and watch the curve grow.*
+> GitHub 近期限制了 star 数据公开接口，趋势图暂时以占位形式展示；
+> 等收到第一颗 ⭐ 后，会切换为 star-history 实时曲线。
+> *GitHub recently restricted the public stargazers API, so the chart shows a
+> placeholder for now; once the first ⭐ arrives it switches to a live curve.*
+
+喜欢 DSKIN？点个 ⭐ 支持一下。
+*Like DSKIN? Hit ⭐ and help the curve grow.*
 
 ## 🛠️ 开发 / Development
 
