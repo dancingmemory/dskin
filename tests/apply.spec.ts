@@ -29,7 +29,7 @@ afterEach(async () => {
   localStorage.clear()
 })
 
-const PET_SELECTOR = '[class*="pixelPetMouse"],[class*="pixelPetWhale"],[class*="pixelPetKitten"]'
+const PET_SELECTOR = '[class*="pixelPetKitten"]'
 
 describe('DSKIN skin apply', () => {
   it('mounts the pixel surface: attribute, pet troop, switcher, favicon, title', async () => {
@@ -38,9 +38,9 @@ describe('DSKIN skin apply', () => {
 
     expect(document.body.dataset.dshDskin).toBe('')
     const pets = document.body.querySelectorAll(PET_SELECTOR)
-    expect(pets.length).toBe(4) // 2 mice + 1 whale + 1 kitten
-    expect(document.body.querySelector('[class*="pixelPetWhale"]')).not.toBeNull()
-    expect(document.body.querySelector('[class*="pixelPetMouse"]')).not.toBeNull()
+    expect(pets.length).toBe(1) // only the switchable kitten lives in the troop
+    expect(document.body.querySelector('[class*="pixelPetWhale"]')).toBeNull()
+    expect(document.body.querySelector('[class*="pixelPetMouse"]')).toBeNull()
     expect(document.body.querySelector('[class*="pixelPetKitten"]')).not.toBeNull()
     for (const pet of pets) {
       expect(pet.querySelector('svg')).not.toBeNull()
@@ -81,7 +81,7 @@ describe('DSKIN skin apply', () => {
     const pet = document.body.querySelector(PET_SELECTOR)
     expect(pet).not.toBeNull()
     pet?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(4)
+    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(1)
     await fiber.dispose()
     fiber = undefined
     expect(document.body.querySelector('[class*="pixelPet"]')).toBeNull()

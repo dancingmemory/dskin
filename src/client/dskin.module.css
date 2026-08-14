@@ -39,21 +39,6 @@
   image-rendering: crisp-edges;
 }
 
-/* the whale is smaller */
-.pixelPetWhale .pixelPetSprite {
-  width: 30px;
-}
-
-/* the kittens sit at the same scale as the mice */
-.pixelPetKitten .pixelPetSprite {
-  width: 42px;
-}
-
-/* the mice keep the full sprite size (class kept so the kind is addressable) */
-.pixelPetMouse .pixelPetSprite {
-  width: 42px;
-}
-
 /* idle bob: two-step pixel bounce */
 .pixelPet[data-pet-state='idle'] .pixelPetSprite {
   animation: pet-bob 0.5s steps(2, end) infinite;
@@ -103,10 +88,6 @@
   background: rgba(20, 27, 56, 0.22);
   filter: blur(1px);
   animation: pet-shadow 0.5s steps(2, end) infinite;
-}
-
-.pixelPetWhale .pixelPetShadow {
-  width: 24px;
 }
 
 @keyframes pet-shadow {

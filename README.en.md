@@ -30,11 +30,10 @@
 no layout changes — it just keeps a troop of small pixel pets at the bottom
 edge of your screen.
 
-Two yellow electric mice + a little whale + **one switchable pixel kitten**
-(🐱 大橘 orange tabby / 小白 white / 玄猫 black / 花猫 tuxedo). The pets are
-small and hug the screen edge so they never block the view. Click one and it
-hops; hover and it bounces. The **paw button 🐾** in the bottom-right corner
-switches between the 4 kittens — your choice is remembered.
+A **single switchable pixel kitten** (🐱 大橘 orange tabby / 小白 white /
+玄猫 black / 花猫 tuxedo). It hugs the screen edge and never blocks the view.
+Click it and it hops; hover and it bounces. The **paw button 🐾** in the
+bottom-right corner switches between the 4 kittens — your choice is remembered.
 
 > **Pure presentation skin**: no service injection, no cordis events, no model
 > traffic. Follows the official `dsh.client` client plugin contract —
@@ -45,9 +44,8 @@ switches between the 4 kittens — your choice is remembered.
 | | |
 | --- | --- |
 | 🐱 **4 switchable kittens** | 大橘 orange / 小白 white / 玄猫 black / 花猫 tuxedo — pick via the 🐾 paw button, choice remembered |
-| 🐭 **Multiple pets** | 2 pixel mice + 1 pixel whale + 1 kitten, each with its own speed and state machine |
 | 👟 **Living pets** | stepping / blinking / edge turns / hover bounce / click hop / pixel shadow |
-| 📏 **No obstruction** | tiny pets at the screen edge; no frame, no background, native UI |
+| 📏 **No obstruction** | a single tiny kitten at the screen edge; no frame, no background, native UI |
 | 🐱 **Pixel favicon** | current kitten head + product title `DSKIN · DeepSeek Harness` |
 | ✅ **Zero intrusion** | native fonts, buttons, inputs, scrollbars and layout |
 

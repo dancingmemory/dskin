@@ -41,14 +41,6 @@ import {
   KIT_WHITE_NAME,
   KIT_WHITE_WALK_A,
   KIT_WHITE_WALK_B,
-  MOUSE_BLINK,
-  MOUSE_IDLE,
-  MOUSE_WALK_A,
-  MOUSE_WALK_B,
-  WHALE_BLINK,
-  WHALE_IDLE,
-  WHALE_WALK_A,
-  WHALE_WALK_B,
 } from './mascots.ts'
 
 /** The product title the skin pins (captured by the shell's DocumentTitle after settle). */
@@ -80,9 +72,10 @@ interface PetFrames {
   readonly walkB: string
 }
 
+/** Pet spec for the switchable kitten. */
 interface PetSpec {
   readonly frames: PetFrames
-  readonly kind: 'mouse' | 'whale' | 'kitten'
+  readonly kind: 'kitten'
   /** movement speed in px/s */
   readonly speed: number
   /** vertical offset from the bottom of the viewport in px */
@@ -92,9 +85,6 @@ interface PetSpec {
   /** whether the pet flips sprite when turning around */
   readonly edgeTurn: boolean
 }
-
-const MOUSE_FRAMES: PetFrames = { idle: MOUSE_IDLE, blink: MOUSE_BLINK, walkA: MOUSE_WALK_A, walkB: MOUSE_WALK_B }
-const WHALE_FRAMES: PetFrames = { idle: WHALE_IDLE, blink: WHALE_BLINK, walkA: WHALE_WALK_A, walkB: WHALE_WALK_B }
 
 /** The four switchable kittens. */
 const KITTENS = [
@@ -352,8 +342,9 @@ class KittenSwitcher {
 }
 
 /**
- * Apply the DSKIN skin: body attribute, the pet troop, the kitten switcher,
- * favicon, title. All writes are retracted by the effect disposer on dispose.
+ * Apply the DSKIN skin: body attribute, the switchable pixel kitten, the
+ * paw switcher, favicon, title. All writes are retracted by the effect
+ * disposer on dispose.
  * @param ctx - owning context (the effect lifecycle owns retraction).
  */
 export function apply(ctx: Context): void {
@@ -364,18 +355,12 @@ export function apply(ctx: Context): void {
   const kittenPet = new PixelPet({
     frames: kittenById(loadKittenId()).frames,
     kind: 'kitten',
-    speed: rand(20, 28),
+    speed: rand(22, 30),
     bottom: 4,
-    startX: rand(240, 420),
+    startX: rand(120, 320),
     edgeTurn: true,
   })
-  const pets = [
-    new PixelPet({ frames: MOUSE_FRAMES, kind: 'mouse', speed: rand(22, 30), bottom: 4, startX: rand(20, 120), edgeTurn: true }),
-    new PixelPet({ frames: MOUSE_FRAMES, kind: 'mouse', speed: rand(18, 26), bottom: 4, startX: rand(500, 700), edgeTurn: true }),
-    new PixelPet({ frames: WHALE_FRAMES, kind: 'whale', speed: 12, bottom: 4, startX: rand(900, 1100), edgeTurn: false }),
-    kittenPet,
-  ]
-  for (const pet of pets) pet.attach()
+  kittenPet.attach()
   const switcher = new KittenSwitcher(kittenPet)
   switcher.attach()
 
@@ -388,11 +373,11 @@ export function apply(ctx: Context): void {
 
   ctx.effect(() => () => {
     delete body.dataset.dshDskin
-    for (const pet of pets) pet.dispose()
+    kittenPet.dispose()
     switcher.dispose()
     favicon.remove()
     if (document.title === SKIN_TITLE) document.title = originalTitle
-  }, 'ui-skin-dskin: DSKIN pets + switcher')
+  }, 'ui-skin-dskin: DSKIN kitten + switcher')
 }
 
 /** Favicon shows whichever kitten is currently selected. */

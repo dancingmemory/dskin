@@ -66,13 +66,9 @@ def make(theme):
     # composer
     d.rectangle([260, H - 70, W - 60, H - 22], fill=(255, 255, 255) if not dark else (20, 27, 56),
                 outline=(46, 58, 89) if not dark else None, width=1 if not dark else 0)
-    # pets at the bottom edge
-    mpal = {**MP, 'K': INK, 'Y': (255, 210, 63), 'E': INK, 'C': (255, 140, 105), 'S': (255, 210, 63), 'w': (255, 255, 255)}
-    draw_pixels(d, MOUSE, 60, H - 26, 2, mpal)
-    draw_pixels(d, MOUSE, 300, H - 26, 2, mpal)
-    draw_pixels(d, CAT_ORANGE, 560, H - 30, 2, PAL)
-    wpal = {**MP, 'K': INK, 'W': (74, 144, 217), 'B': (238, 244, 255), 'E': INK, 'w': (255, 255, 255), 's': (159, 216, 255)}
-    draw_pixels(d, WHALE, 980, H - 26, 2, wpal)
+    # the switchable kitten at the bottom edge
+    draw_pixels(d, CAT_ORANGE, 300, H - 30, 2, PAL)
+
     # paw switcher
     d.rectangle([W - 46, H - 40, W - 16, H - 10], fill=(255, 255, 255) if not dark else (46, 58, 89),
                 outline=(46, 58, 89), width=2)
