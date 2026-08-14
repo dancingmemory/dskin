@@ -39,19 +39,26 @@ body[data-dsh-dskin] {
 
 body[data-dsh-dskin][data-ds-dark-theme] {
   background-color: #10162e;
+  /* grass strip first (painted on top of the sky), then pixel stars placed
+     only in the visible frame strips (top + sides), sky gradient last */
   background-image:
     repeating-linear-gradient(90deg, #3f6d2f 0 14px, #355d27 14px 28px),
-    radial-gradient(1.5px 1.5px at 8% 8%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(2px 2px at 20% 5%, rgba(255, 255, 255, 0.65) 50%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(1px 1px at 30% 16%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(1.5px 1.5px at 43% 8%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(2px 2px at 55% 18%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(1px 1px at 66% 6%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(1.5px 1.5px at 78% 13%, rgba(255, 255, 255, 0.65) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 6px 4px, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 60px 6px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(1.5px 1.5px at 130px 3px, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 320px 7px, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(1.5px 1.5px at 560px 4px, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 800px 8px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(1.5px 1.5px at 1050px 3px, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 1310px 6px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(1.5px 1.5px at 8px 160px, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 8px 340px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(1.5px 1.5px at 1432px 260px, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 50%),
+    radial-gradient(2px 2px at 1432px 480px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 50%),
     linear-gradient(180deg, #10162e 0%, #151d3c 58%, #1e2a58 100%);
-  background-size: 28px 26px, auto, auto, auto, auto, auto, auto, auto, auto;
-  background-position: 0 calc(100% - 2px), 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-  background-repeat: repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-size: 28px 26px, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto;
+  background-position: 0 calc(100% - 2px), 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  background-repeat: repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   padding: 12px 14px 26px;
   box-sizing: border-box;
 }
