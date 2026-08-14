@@ -23,6 +23,9 @@ body[data-dsh-dskin] {
     radial-gradient(circle at 55% 9%, rgba(255, 255, 255, 0.7) 0 6px, rgba(255, 255, 255, 0) 8px),
     radial-gradient(circle at 71% 15%, rgba(255, 255, 255, 0.7) 0 6px, rgba(255, 255, 255, 0) 8px),
     linear-gradient(180deg, #bcdcf5 0%, #dceefb 55%, #eef6fc 100%);
+  /* inset the app window so the sky peeks through as a game-console frame */
+  padding: 6px 8px 16px;
+  box-sizing: border-box;
 }
 
 /* --- Sky backdrop: dark ------------------------------------------------------ */
@@ -39,16 +42,22 @@ body[data-dsh-dskin][data-ds-dark-theme] {
     radial-gradient(1.5px 1.5px at 78% 15%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 50%),
     radial-gradient(1px 1px at 91% 9%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 50%),
     linear-gradient(180deg, #10162e 0%, #151d3c 60%, #1b2550 100%);
+  padding: 6px 8px 16px;
+  box-sizing: border-box;
 }
 
-/* --- App window: thin pixel frame (no layout change) --------------------------- */
+/* --- App window: thin pixel frame (the app itself keeps its own height
+   contract — we only clamp it to the padded body so the sky frame shows) ------ */
 
-body[data-dsh-dskin] [id='root'] {
+body[data-dsh-dskin] #root {
+  box-sizing: border-box;
+  height: calc(100vh - 22px);
+  min-height: calc(100vh - 22px);
   border: 2px solid rgba(46, 58, 89, 0.28);
   box-shadow: 0 0 0 1px rgba(46, 58, 89, 0.08), 3px 3px 0 rgba(46, 58, 89, 0.14);
 }
 
-body[data-dsh-dskin][data-ds-dark-theme] [id='root'] {
+body[data-dsh-dskin][data-ds-dark-theme] #root {
   border-color: rgba(160, 180, 230, 0.22);
   box-shadow: 0 0 0 1px rgba(7, 12, 31, 0.3), 3px 3px 0 rgba(7, 12, 31, 0.4);
 }
@@ -57,7 +66,7 @@ body[data-dsh-dskin][data-ds-dark-theme] [id='root'] {
 
 .pixelPet {
   position: fixed;
-  bottom: 12px;
+  bottom: 22px;
   z-index: 2147483001;
   pointer-events: auto;
   cursor: pointer;

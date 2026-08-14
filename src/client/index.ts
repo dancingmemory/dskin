@@ -53,6 +53,7 @@ class PixelPet {
   private state: 'idle' | 'walk' = 'idle'
   private direction: 1 | -1 = 1
   private x = 16
+  private readonly maxX = () => Math.max(0, (window.innerWidth ?? document.documentElement.clientWidth) - this.el.offsetWidth - 12)
   private walkFrame = 0
   private nextWalkFlip = 0
   private nextWalkAt = performance.now() + rand(1000, 3000)
@@ -123,8 +124,7 @@ class PixelPet {
     } else {
       // glide along the bottom edge
       this.x += this.direction * PET_SPEED * dt
-      const width = this.el.offsetWidth
-      const maxX = Math.max(0, (window.innerWidth ?? document.documentElement.clientWidth) - width)
+      const maxX = this.maxX()
       if (this.x >= maxX) {
         this.x = maxX
         this.direction = -1
