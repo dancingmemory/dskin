@@ -55,9 +55,11 @@ class PixelPet {
   private x = 16
   private walkFrame = 0
   private nextWalkFlip = 0
-  private idleUntil = performance.now() + rand(1200, 3200)
+  private nextWalkAt = performance.now() + rand(1000, 3000)
   private walkUntil = 0
-  private blinkFrame = 0
+  private nextBlinkAt = performance.now() + rand(600, 2000)
+  private blinkEnd = 0
+  private blinking = false
   private lastNow = 0
   private raf = 0
 
@@ -98,22 +100,22 @@ class PixelPet {
     this.lastNow = now
 
     if (this.state === 'idle') {
-      // occasional blink
-      if (this.blinkFrame === 0 && this.idleUntil < now) {
-        this.blinkFrame = now + 220
+      // occasional blink: fully independent timer from walking
+      if (!this.blinking && this.nextBlinkAt < now) {
+        this.blinking = true
+        this.blinkEnd = now + 220
         this.sprite.innerHTML = BLINK
-        this.idleUntil = now + rand(220, 500)
-      } else if (this.blinkFrame !== 0 && this.blinkFrame < now) {
-        this.blinkFrame = 0
+      } else if (this.blinking && this.blinkEnd < now) {
+        this.blinking = false
         this.sprite.innerHTML = IDLE
-        this.idleUntil = now + rand(1500, 4000)
+        this.nextBlinkAt = now + rand(1800, 5000)
       }
       // decide to walk
-      if (this.idleUntil < now) {
+      if (this.nextWalkAt < now) {
         this.state = 'walk'
         this.direction = Math.random() < 0.5 ? 1 : -1
         this.flip.dataset.petFlip = String(-this.direction)
-        this.walkUntil = now + rand(1500, 4000)
+        this.walkUntil = now + rand(1800, 4500)
         this.el.dataset.petState = 'walk'
         this.sprite.innerHTML = WALK_A
         this.walkFrame = 0
@@ -144,7 +146,7 @@ class PixelPet {
         this.state = 'idle'
         this.el.dataset.petState = 'idle'
         this.sprite.innerHTML = IDLE
-        this.idleUntil = now + rand(1500, 4000)
+        this.nextWalkAt = now + rand(1500, 4000)
       }
     }
   }
