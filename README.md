@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner-light.png" alt="DSKIN banner" width="100%">
+  <img src="assets/banner.jpg" alt="DSKIN banner" width="100%">
 </p>
 
 <h1 align="center">🐭 DSKIN · 像素宠物派对 🐳</h1>
@@ -17,6 +17,14 @@
 </p>
 
 ---
+
+**📖 简介 / Intro**
+
+> **DSKIN** 是 DeepSeek Harness（DSH）的轻量化卡通像素皮肤插件：
+> 原始界面一概不动，只添加一只会动会跳的像素宠物。
+>
+> *DSKIN is a lightweight cartoon pixel skin plugin for DeepSeek Harness
+> (DSH): the original UI stays untouched — it only adds living pixel pets.*
 
 **原始界面，一概不动。** DSKIN 不换字体、不重排布局、不动按钮——它只在你的
 DSH 桌面上做一件事：**放一群会动的像素宠物。**
