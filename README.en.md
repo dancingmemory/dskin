@@ -21,19 +21,20 @@
 **📖 Intro / 简介**
 
 > **DSKIN** is a lightweight cartoon pixel skin plugin for DeepSeek Harness
-> (DSH): the original UI stays untouched — it only adds living pixel pets.
+> (DSH): the UI stays untouched — tiny pixel pets live at the screen edge.
 >
 > *DSKIN 是 DeepSeek Harness（DSH）的轻量化卡通像素皮肤插件：
-> 原始界面一概不动，只添加会动的像素宠物。*
+> 界面零改动，只在屏幕底边养几只小像素宠物。*
 
-**The original UI stays untouched.** DSKIN does not change fonts, layout or
-buttons — it does one thing on your DSH desktop: **host a troop of living
-pixel pets.**
+**Zero UI changes, zero obstruction.** DSKIN adds no frame, no background and
+no layout changes — it just keeps a troop of small pixel pets at the bottom
+edge of your screen.
 
-Two yellow cartoon electric mice stroll across the pixel grass strip at the
-bottom — stepping, blinking, turning around at the edges. A pixel whale swims
-lazily through the sky above. Hover a pet and it bounces; **click it and it
-hops.**
+Two yellow electric mice + a little whale + **one switchable pixel kitten**
+(🐱 大橘 orange tabby / 小白 white / 玄猫 black / 花猫 tuxedo). The pets are
+small and hug the screen edge so they never block the view. Click one and it
+hops; hover and it bounces. The **paw button 🐾** in the bottom-right corner
+switches between the 4 kittens — your choice is remembered.
 
 > **Pure presentation skin**: no service injection, no cordis events, no model
 > traffic. Follows the official `dsh.client` client plugin contract —
@@ -43,12 +44,11 @@ hops.**
 
 | | |
 | --- | --- |
-| 🐭 **Multiple pets** | 2 pixel mice strolling + 1 pixel whale swimming, each with its own speed and state machine |
-| 👟 **Living pets** | stepping animation / blinking / edge turns / hover bounce / click hop / pixel shadow |
-| ☀️ **Cartoon desktop** | pale-blue sky, clouds, sun and a pixel grass strip (dark: starry night) |
-| 🖼️ **Game-console frame** | the app window is inset with a 3px pixel border + hard shadow so the sky shows |
-| 🐭 **Pixel favicon** | pet head favicon + product title `DSKIN · DeepSeek Harness` |
-| 🌙 **Both themes** | follows the DSH appearance setting; `prefers-reduced-motion` friendly |
+| 🐱 **4 switchable kittens** | 大橘 orange / 小白 white / 玄猫 black / 花猫 tuxedo — pick via the 🐾 paw button, choice remembered |
+| 🐭 **Multiple pets** | 2 pixel mice + 1 pixel whale + 1 kitten, each with its own speed and state machine |
+| 👟 **Living pets** | stepping / blinking / edge turns / hover bounce / click hop / pixel shadow |
+| 📏 **No obstruction** | tiny pets at the screen edge; no frame, no background, native UI |
+| 🐱 **Pixel favicon** | current kitten head + product title `DSKIN · DeepSeek Harness` |
 | ✅ **Zero intrusion** | native fonts, buttons, inputs, scrollbars and layout |
 
 ## 🖼️ Previews
