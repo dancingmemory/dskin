@@ -212,6 +212,35 @@ describe('DSKIN skin apply', () => {
     fiber = undefined
   })
 
+  it('releasing a dragged-down hanging cat drops it (no stuck cats)', async () => {
+    fiber = await mount()
+    const pet = document.body.querySelector(PET_SELECTOR) as HTMLElement
+    // drag to the top → latch & hang
+    pet.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 100, clientY: 10 }))
+    pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100, clientY: 5 }))
+    expect(pet.dataset.petState).toBe('hang')
+    // drag down beyond the stick window, then release → it drops, not stuck
+    pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100, clientY: 40 }))
+    pet.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    expect(pet.dataset.petState).not.toBe('hang')
+    await fiber.dispose()
+    fiber = undefined
+  })
+
+  it('dropping a cat against a side edge starts wall-climbing', async () => {
+    fiber = await mount()
+    const pet = document.body.querySelector(PET_SELECTOR) as HTMLElement
+    // jsdom rects are all-zero, so grab offsets are clientX/clientY themselves:
+    // grab at (100, 874), move to land nextX=4 (left edge) and nextY=726 (in-zone)
+    pet.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 100, clientY: 874 }))
+    pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 104, clientY: 1600 }))
+    pet.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    expect(pet.dataset.petState).toBe('climb')
+    expect(pet.dataset.petClimb).toBe('-1')
+    await fiber.dispose()
+    fiber = undefined
+  })
+
   it('retracts everything on fiber dispose', async () => {
     document.title = 'DeepSeek Harness'
     fiber = await mount()

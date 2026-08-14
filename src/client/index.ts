@@ -111,6 +111,23 @@ const HANG_PIN_Y = 4
 /** Pull distance (px) below the latch line to un-hang back into a drag. */
 const UNHANG_DRAG = 40
 
+/**
+ * Releasing a hanging cat that was dragged further down than this (below the
+ * pin) drops it instead of keeping it stuck hanging — no more "stuck on top".
+ */
+const HANG_STICK_WINDOW = 20
+
+/** Natural chance that a cat climbing the edge instead of turning around. */
+let climbChance = 0.2
+
+/** Test hook: force/disable natural edge-climbing. */
+export function setClimbChance(chance: number): void {
+  climbChance = chance
+}
+
+/** A moving cat stuck in place longer than this gets repaired (watchdog). */
+const STUCK_WATCHDOG_MS = 4000
+
 /* ------------------------------------------------------------------ */
 /* built-in updater: checks the GitHub repo for new releases           */
 /* ------------------------------------------------------------------ */
@@ -270,7 +287,7 @@ function saveKittenId(id: KittenId): void {
  * sways, its shadow shrinks, and it occasionally cries "!". Click = hop.
  * Cats that meet inside the zone stop to play, then scatter apart.
  */
-type PetState = 'idle' | 'walk' | 'drag' | 'hang' | 'return'
+type PetState = 'idle' | 'walk' | 'climb' | 'drag' | 'hang' | 'return'
 
 class PixelPet {
   private readonly el: HTMLDivElement
@@ -297,6 +314,18 @@ class PixelPet {
   /* 2D roaming (replaced by bottom-walking + drop-and-play) */
   private playUntil = 0
   private nextPlayHopAt = 0
+
+  /* wall climbing (special sideways pose on the left/right edges) */
+  private climbSide: 1 | -1 = 1
+  private climbDir: -1 | 1 = -1
+  private climbFlipAt = 0
+  private climbUntil = 0
+  private lastClimbAt = 0
+
+  /* stuck watchdog */
+  private lastPosChangedAt = 0
+  private lastPosX = 0
+  private lastPosY = 0
 
   private interacting = false
   private interactEnd = 0
@@ -437,6 +466,37 @@ class PixelPet {
     this.setState('return')
   }
 
+  /**
+   * Start wall-climbing on the nearest side edge: the cat clings sideways
+   * (90° pose), climbs up and down for a long while, can reach the top and
+   * hang there, then eventually drops back to the bottom.
+   */
+  private startClimb(): void {
+    const zone = this.zone()
+    this.climbSide = this.x <= zone.left + 12 ? -1 : 1
+    this.x = this.climbSide === -1 ? zone.left : zone.right
+    this.climbDir = -1
+    this.climbFlipAt = performance.now() + rand(2500, 6000)
+    this.climbUntil = performance.now() + rand(30000, 120000)
+    this.el.dataset.petClimb = String(this.climbSide)
+    this.el.style.left = `${Math.round(this.x)}px`
+    this.setState('climb')
+  }
+
+  /** Stuck-cat watchdog: snap back to the bottom edge and resume life. */
+  private repair(): void {
+    const zone = this.zone()
+    this.x = Math.max(zone.left, Math.min(zone.right, this.x))
+    this.y = zone.bottom
+    this.el.style.left = `${Math.round(this.x)}px`
+    this.el.style.top = `${Math.round(this.y)}px`
+    this.setState('idle')
+    this.sprite.innerHTML = this.spec.frames.idle
+    this.nextWalkAt = performance.now() + rand(500, 1500)
+    this.lastPosChangedAt = performance.now()
+    this.nextBubbleAt = performance.now() + 1500
+  }
+
   private readonly onPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0) return
     const rect = this.el.getBoundingClientRect()
@@ -497,13 +557,19 @@ class PixelPet {
   private readonly onPointerUp = (): void => {
     if (!this.dragging) return
     if (this.hanging) {
-      // let go while hanging: the cat stays up there until grabbed again
+      // released near the top → stays hanging (long-term stay up there)
+      if (this.y <= HANG_PIN_Y + HANG_STICK_WINDOW) {
+        this.hanging = false
+        this.dragging = false
+        this.el.removeEventListener('pointermove', this.onPointerMove)
+        this.el.removeEventListener('pointerup', this.onPointerUp)
+        this.el.removeEventListener('pointercancel', this.onPointerCancel)
+        this.setState('hang')
+        return
+      }
+      // released lower than the stick window → drop normally (no stuck cats)
       this.hanging = false
-      this.dragging = false
-      this.el.removeEventListener('pointermove', this.onPointerMove)
-      this.el.removeEventListener('pointerup', this.onPointerUp)
-      this.el.removeEventListener('pointercancel', this.onPointerCancel)
-      this.setState('hang')
+      this.finishDrag()
       return
     }
     this.finishDrag()
@@ -522,6 +588,11 @@ class PixelPet {
     const zone = this.zone()
     const inside = this.y >= zone.top - 24 && this.y <= zone.bottom + 24 && this.x >= zone.left && this.x <= zone.right
     if (inside) {
+      // dropped against a side edge → the cat climbs the wall instead of landing
+      if ((this.x <= zone.left + 12 || this.x >= zone.right - 12) && this.y > zone.top + 60) {
+        this.startClimb()
+        return
+      }
       // dropped inside the zone: the cat stays at the landing spot and plays
       // there, then slowly descends back to the bottom
       this.playUntil = performance.now() + PLAY_LOCAL_MS
@@ -582,6 +653,18 @@ class PixelPet {
       this.popHeart()
     }
 
+    // stuck watchdog: a moving cat that hasn't progressed for a while gets
+    // repaired back to the bottom edge (no frozen kittens, ever)
+    if (this.state === 'walk' || this.state === 'climb' || this.state === 'return') {
+      if (Math.abs(this.x - this.lastPosX) + Math.abs(this.y - this.lastPosY) > 1) {
+        this.lastPosChangedAt = now
+        this.lastPosX = this.x
+        this.lastPosY = this.y
+      } else if (now - this.lastPosChangedAt > STUCK_WATCHDOG_MS) {
+        this.repair()
+      }
+    }
+
     if (this.state === 'drag') {
       // dangling in the pointer's grip: occasional "!" bubble
       if (this.nextBubbleAt < now) {
@@ -596,6 +679,35 @@ class PixelPet {
       if (this.nextBubbleAt < now) {
         this.nextBubbleAt = now + rand(1200, 2400)
         this.popBubble('…')
+      }
+      return
+    }
+
+    if (this.state === 'climb') {
+      // wall-climbing: slow vertical creep on the side edge, long-term stay
+      const zone = this.zone()
+      this.y += this.climbDir * this.spec.speed * 0.5 * dt
+      if (this.climbDir === -1 && this.y <= HANG_PIN_Y + 8) {
+        // climbed to the top → become a hanging cat (long-term stay up there)
+        this.y = HANG_PIN_Y
+        this.el.style.top = `${Math.round(this.y)}px`
+        this.el.dataset.petHang = '1'
+        this.setState('hang')
+        return
+      }
+      if (this.y >= zone.bottom) {
+        this.y = zone.bottom
+        this.climbDir = -1
+      }
+      if (now >= this.climbFlipAt) {
+        this.climbDir = this.climbDir === 1 ? -1 : 1
+        this.climbFlipAt = now + rand(2500, 6000)
+      }
+      this.el.style.top = `${Math.round(this.y)}px`
+      this.el.style.left = `${Math.round(this.x)}px`
+      if (now >= this.climbUntil) {
+        this.beginReturn()
+        return
       }
       return
     }
@@ -654,10 +766,21 @@ class PixelPet {
       this.x += this.direction * this.spec.speed * dt
       if (this.x <= zone.left) {
         this.x = zone.left
+        // sometimes a cat starts climbing the wall instead of turning around
+        if (Math.random() < climbChance && now - this.lastClimbAt > 10000) {
+          this.lastClimbAt = now
+          this.startClimb()
+          return
+        }
         this.direction = 1
         this.flip.dataset.petFlip = '-1'
       } else if (this.x >= zone.right) {
         this.x = zone.right
+        if (Math.random() < climbChance && now - this.lastClimbAt > 10000) {
+          this.lastClimbAt = now
+          this.startClimb()
+          return
+        }
         this.direction = -1
         this.flip.dataset.petFlip = '1'
       }
