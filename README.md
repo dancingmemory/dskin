@@ -107,6 +107,15 @@ dsh web        # 安装后重启，让新插件行进入加载图谱
 打开 `http://127.0.0.1:3080`，小猫已经在你屏幕底边等你了。
 还原：`dsh plugin --profile web remove dskin` 再重启。
 
+## 🔒 安全边界 / Privacy & Scope
+
+DSKIN **只在你自己的 DSH Web 应用页面内运行**（默认 `http://127.0.0.1:3080`）：
+
+- **不是浏览器扩展**：不会在其他网站运行，不修改任何网页、主页、搜索引擎或浏览器设置
+- **不收集数据**：无统计、无追踪、无第三方脚本；只读/写 DSH 页面自己的 localStorage（猫咪配置）
+- **唯一的联网请求**：每 6 小时一次只读检查 GitHub 是否有新版本；升级按钮仅在点击后才打开 GitHub
+- **卸载即还原**：`dsh plugin --profile web remove dskin` + 重启，页面完整还原
+
 ## 🔍 发现 / Discoverability
 
 本仓库已打上官方 **`dsh-plugin`** 主题标签，可在

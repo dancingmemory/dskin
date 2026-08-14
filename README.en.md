@@ -130,6 +130,19 @@ dsh web        # restart after installing — plugin rows load at boot only
 Open `http://127.0.0.1:3080` — the kittens are already strolling at the
 bottom edge. To revert: `dsh plugin --profile web remove dskin` and restart.
 
+## 🔒 Privacy & Scope / 安全边界
+
+DSKIN runs **only inside your own DSH Web app page** (default `http://127.0.0.1:3080`):
+
+- **Not a browser extension**: it never runs on other websites and never touches
+  browser settings, homepage, search engine or other pages
+- **No data collection**: no analytics, no tracking, no third-party scripts;
+  it only reads/writes the DSH page's own localStorage (kitten config)
+- **The only network request**: a read-only GitHub check for new versions every
+  6 hours; the upgrade page only opens after you click the button
+- **Fully reversible**: `dsh plugin --profile web remove dskin` + restart and
+  the page is restored completely
+
 ## ⭐ Star History
 
 ![star-trend](assets/star-trend.png)
