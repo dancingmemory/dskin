@@ -2,10 +2,15 @@
   <img src="assets/banner.jpg" alt="DSKIN banner" width="100%">
 </p>
 
-<h1 align="center">🐭 DSKIN · Pixel Pet Party 🐳</h1>
+<p align="center">
+  <a href="README.md"><img src="https://img.shields.io/badge/🌏-简体中文-2e3a59" alt="简体中文"></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/🌏-English-2e3a59" alt="English"></a>
+</p>
+
+<h1 align="center">🐱 DSKIN · Pixel Kitten Party</h1>
 
 <p align="center">
-  <b>A cartoon pixel skin plugin made exclusively for the DeepSeek Harness (DSH) Web GUI</b><br>
+  <b>A cartoon pixel kitten plugin made exclusively for the DeepSeek Harness (DSH) Web GUI</b><br>
   <i>DeepSeek Harness（DSH）专用卡通像素皮肤插件</i>
 </p>
 
@@ -31,8 +36,9 @@
 no layout changes — it just keeps a troop of small pixel pets at the bottom
 edge of your screen.
 
-Each page load spawns **1–4 random kittens** (🐱 大橘 orange tabby / 小白 white /
-玄猫 black / 花猫 tuxedo) that stroll along the bottom edge. They approach,
+**1–4 pixel kittens** (🐱 大橘 orange tabby / 小白 white / 玄猫 black /
+花猫 tuxedo — count adjustable, breeds swappable) live at the bottom edge.
+They approach,
 chase, and play with each other. The **paw button 🐾** in the bottom-right
 corner lets you toggle the palette to pick any kitten you like.
 
@@ -44,7 +50,7 @@ corner lets you toggle the palette to pick any kitten you like.
 
 | | |
 | --- | --- |
-| 🐱 **1–4 random kittens** | each page load spawns a random crew that stroll along the bottom edge |
+| 🐱 **1–4 pixel kittens** | adjustable count, per-cat breed switching, strolling at the bottom edge |
 | 🤝 **Kitten interactions** | kittens approach, chase, and play with each other |
 | 🐾 **Paw button** | bottom-right switcher to toggle the palette and pick any kitten |
 | 👟 **Living pets** | stepping / blinking / edge turns / hover bounce / click hop / pixel shadow |

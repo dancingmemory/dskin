@@ -2,6 +2,11 @@
   <img src="assets/banner.jpg" alt="DSKIN banner" width="100%">
 </p>
 
+<p align="center">
+  <a href="README.md"><img src="https://img.shields.io/badge/🌏-简体中文-2e3a59" alt="简体中文"></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/🌏-English-2e3a59" alt="English"></a>
+</p>
+
 <h1 align="center">🐱 DSKIN · 像素小猫派对</h1>
 
 <p align="center">
@@ -19,8 +24,8 @@
 
 ---
 
-**界面零改动，只养猫。** DSKIN 不加外框、不改背景、不动布局——每次打开页面，
-屏幕底边会**随机出现 1~4 只像素小猫**，它们散步、玩耍、可以被你抓住拖来拖去。
+**界面零改动，只养猫。** DSKIN 不加外框、不改背景、不动布局——页面底边住着
+**1~4 只像素小猫**（数量可调、品种可换），它们散步、玩耍、可以被你抓住拖来拖去。
 
 > **纯皮肤插件**：不注入服务、不发事件、不触碰模型请求。遵循官方
 > `dsh.client` 客户端插件契约，可热插拔、可卸载，卸载后完整还原。
