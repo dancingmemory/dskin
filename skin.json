@@ -1,0 +1,29 @@
+{
+  "id": "pixel-party",
+  "name": "像素鲸派对",
+  "nameEn": "Pixel Whale Party",
+  "author": "skytimer",
+  "tagline": "卡通像素风 · 蓝天白云 · 硬阴影游戏面板 · 像素鲸",
+  "description": "DSH Web 的卡通像素皮肤：晴天娃娃蓝天空、像素云朵、厚描边硬阴影游戏面板、Press Start 2P 像素标题栏和状态栏，以及一只喷水的像素鲸。暗色主题是缀满像素星星的夜空。纯呈现层皮肤，不注入服务、不触碰模型请求。",
+  "tags": [
+    "pixel",
+    "cartoon",
+    "retro",
+    "game",
+    "whale",
+    "8-bit",
+    "pixel-art"
+  ],
+  "accent": "#4a90d9",
+  "bodyAttr": "data-dsh-pixel-party",
+  "package": "dskin",
+  "wiring": {
+    "id": "ui-skin-pixel-party",
+    "bundleWired": false
+  },
+  "preview": {
+    "light": "preview/light.png",
+    "dark": "preview/dark.png"
+  },
+  "order": 1
+}
