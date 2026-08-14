@@ -1,10 +1,10 @@
 {
   "id": "pixel-party",
-  "name": "DSKIN 像素宠物",
-  "nameEn": "DSKIN Pixel Pet",
+  "name": "DSKIN 像素宠物派对",
+  "nameEn": "DSKIN Pixel Pet Party",
   "author": "skytimer",
-  "tagline": "原始 UI 不动 · 一只会走会眨眼会跳的像素鼠宠物",
-  "description": "DSH Web 的轻量卡通像素皮肤：原始界面完全保留，只添加一只会散步、踏步、眨眼、转身、悬停蹦跶、点击起跳的像素鼠宠物，以及轻柔的天空背景和细像素窗框。纯呈现层皮肤，不注入服务、不触碰模型请求。",
+  "tagline": "原始 UI 不动 · 2只像素鼠散步 + 1条像素鲸游弋",
+  "description": "DSH Web 的轻量卡通像素皮肤：原始界面完全保留，只添加一群会动的像素宠物——两只卡通电击鼠在像素草地上散步（踏步/眨眼/转身/悬停蹦跶/点击起跳）和一条在天空游弋的像素鲸，外加卡通天空背景与游戏机像素窗框。纯呈现层皮肤，不注入服务、不触碰模型请求。",
   "tags": [
     "pixel",
     "cartoon",

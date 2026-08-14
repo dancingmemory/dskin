@@ -1,125 +1,126 @@
-# DSKIN 🎮
+<p align="center">
+  <img src="assets/banner-dark.png" alt="DSKIN banner" width="100%">
+</p>
 
-**A cartoon pixel skin plugin made exclusively for DeepSeek Harness (DSH)** —
-the original UI stays untouched; DSKIN only adds light pixel touches and a
-**living pixel pet**.
+<h1 align="center">🐭 DSKIN · Pixel Pet Party 🐳</h1>
 
-The pet is a yellow cartoon electric mouse: it strolls along the bottom of
-the screen, steps its feet, blinks, turns around at the viewport edges,
-bounces when hovered, and **hops when you click it**.
+<p align="center">
+  <b>A cartoon pixel skin plugin made exclusively for the DeepSeek Harness (DSH) Web GUI</b><br>
+  <i>DeepSeek Harness（DSH）专用卡通像素皮肤插件</i>
+</p>
 
-> Pure presentation skin: it only changes the look. No service injection, no
-> cordis events, no model traffic. Follows the official `dsh.client` client
-> plugin contract — hot-pluggable, and fully reversible on uninstall.
+<p align="center">
+  <a href="https://github.com/topics/dsh-plugin"><img src="https://img.shields.io/badge/dsh--plugin-✅%20official%20topic-blue" alt="dsh-plugin"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/dancingmemory/dskin" alt="license"></a>
+  <a href="https://github.com/dancingmemory/dskin"><img src="https://img.shields.io/github/v/tag/dancingmemory/dskin?label=version" alt="version"></a>
+  <img src="https://img.shields.io/badge/platform-Web%20UI-4a90d9" alt="platform">
+</p>
 
-## Previews
+---
+
+**The original UI stays untouched.** DSKIN does not change fonts, layout or
+buttons — it does one thing on your DSH desktop: **host a troop of living
+pixel pets.**
+
+Two yellow cartoon electric mice stroll across the pixel grass strip at the
+bottom — stepping, blinking, turning around at the edges. A pixel whale swims
+lazily through the sky above. Hover a pet and it bounces; **click it and it
+hops.**
+
+> **Pure presentation skin**: no service injection, no cordis events, no model
+> traffic. Follows the official `dsh.client` client plugin contract —
+> hot-pluggable and fully reversible on uninstall.
+
+## ✨ Features
+
+| | |
+| --- | --- |
+| 🐭 **Multiple pets** | 2 pixel mice strolling + 1 pixel whale swimming, each with its own speed and state machine |
+| 👟 **Living pets** | stepping animation / blinking / edge turns / hover bounce / click hop / pixel shadow |
+| ☀️ **Cartoon desktop** | pale-blue sky, clouds, sun and a pixel grass strip (dark: starry night) |
+| 🖼️ **Game-console frame** | the app window is inset with a 3px pixel border + hard shadow so the sky shows |
+| 🐭 **Pixel favicon** | pet head favicon + product title `DSKIN · DeepSeek Harness` |
+| 🌙 **Both themes** | follows the DSH appearance setting; `prefers-reduced-motion` friendly |
+| ✅ **Zero intrusion** | native fonts, buttons, inputs, scrollbars and layout |
+
+## 🖼️ Previews
 
 | Light | Dark |
 | --- | --- |
 | ![light](preview/light.png) | ![dark](preview/dark.png) |
 
-> Previews are illustrations; actual rendering happens in your browser.
+## 📦 Install
 
-## What it does (the restrained version)
+Requires the DeepSeek Harness `dsh` CLI (or `npx @deepseek-ai/dsh`).
 
-- 🐭 **Animated pixel pet**: walks, steps, blinks, turns, bounces on hover, hops on click
-- ☀️ **Soft sky backdrop**: pale clouds (dark: starry sky), peeking at the app edges
-- 🖼️ **Thin pixel frame**: a 2px pixel border + light hard shadow on the app window
-- 🐭 **Pixel favicon** + product title `DSKIN · DeepSeek Harness`
-- ✅ **Original UI fully preserved**: fonts, buttons, inputs, scrollbars, layout all native
-
-## Install
-
-Requires the DeepSeek Harness `dsh` CLI (or run through `npx @deepseek-ai/dsh`).
-
-### Option 1: install from GitHub (recommended)
+### Option 1: from GitHub (recommended)
 
 ```sh
 dsh plugin --profile web add github:dancingmemory/dskin
 ```
 
-> pnpm ≥ 10 may refuse to run build scripts for git dependencies on the first
-> install. `dsh` will print the fix: add `allowBuilds: dskin: true` to the
-> profile's `pnpm-workspace.yaml`, then re-run the command above.
+> pnpm ≥ 10 may refuse to run build scripts for git dependencies on first
+> install. `dsh` prints the fix: add `allowBuilds: dskin: true` to the
+> profile's `pnpm-workspace.yaml`, then re-run.
 
-### Option 2: install from source
+### Option 2: from source
 
 ```sh
 git clone https://github.com/dancingmemory/dskin.git
-cd dskin && pnpm install   # prepare builds lib/ automatically
+cd dskin && pnpm install
 dsh plugin --profile web add .
 ```
 
 ### Option 3: tarball
 
 ```sh
-pnpm pack
-dsh plugin --profile web add ./dskin-0.2.0.tgz
+pnpm pack && dsh plugin --profile web add ./dskin-0.3.0.tgz
 ```
 
-## Usage
-
-1. **Restart** `dsh web` after installing — new plugin rows enter the loading
-   graph at boot only:
+## 🚀 Usage
 
 ```sh
-dsh web
+dsh web        # restart after installing — plugin rows load at boot only
 ```
 
-2. Open `http://127.0.0.1:3080` — the pixel pet appears at the bottom-left
-   and starts strolling.
-3. To revert: `dsh plugin --profile web remove dskin` and restart.
+Open `http://127.0.0.1:3080` — the pets are already strolling on the grass.
+To revert: `dsh plugin --profile web remove dskin` and restart.
 
-> The light/dark theme follows DSH's Appearance setting.
-
-## Development
-
-```sh
-pnpm install        # installs deps and runs prepare (tsdown build)
-pnpm build          # tsdown: lib/index.js (host) + lib/client.js (browser bundle)
-pnpm test           # vitest: apply/dispose contract tests
-```
-
-### Layout
-
-```
-├── package.json          # dsh.bundle patch + dsh.client manifest (official plugin contract)
-├── cordis.patch.yml      # bundle patch layer: inserts the ui-skin-dskin row into the web roster
-├── skin.json             # skin metadata
-├── tsdown.shared.ts      # self-contained port of the official clientBundle build preset
-├── web-platform.ts       # official platform module table (bundle external judgement)
-├── src/
-│   ├── index.ts          # host entry (no-op)
-│   └── client/
-│       ├── index.ts      # apply(ctx) + PixelPet state machine (idle/blink/walk/jump)
-│       ├── mascots.ts    # 4-frame pet pixel SVGs (generated by scripts/gen-mascots.mjs)
-│       └── dskin.module.css  # styles, scoped under body[data-dsh-dskin]
-├── tests/apply.spec.ts   # apply/dispose contract tests
-└── scripts/              # pet frame + preview generators
-```
-
-### Skin contract (official standard)
-
-- Pure presentation: no service injection, no cordis events, no model requests
-- All styles scoped under `body[data-dsh-dskin]` (dark: `body[data-dsh-dskin][data-ds-dark-theme]`)
-- `apply(ctx)` retracts everything it writes in the `ctx.effect` disposer:
-  body attribute, pet DOM, favicon, title
-- CSS Modules are auto-injected as `<style data-plugin-css>` and removed by the
-  loader on entry dispose
-- No static assets: pet frames are inline SVGs
-
-## Discoverability
+## 🔍 Discoverability
 
 This repository carries the official **`dsh-plugin`** topic and is indexed on
 [github.com/topics/dsh-plugin](https://github.com/topics/dsh-plugin), plus the
-`dsh` and `deepseek-harness` topics.
+`dsh` / `deepseek-harness` / `pixel-art` topics.
 
-## Compatibility
+## 🛠️ Development
 
-- DeepSeek Harness `dsh` 0.1.0-rc.x (latest web client plugin contract:
-  `dsh.client` + `lib/client.js` + `window.__ModuleLoader__.load({ id, factory })`)
-- Browsers: Chrome / Edge / Safari and other modern browsers
+```sh
+pnpm install   # installs deps + prepare builds lib/
+pnpm build     # tsdown: lib/index.js (host) + lib/client.js (browser bundle)
+pnpm test      # vitest: apply/dispose contract tests
+```
 
-## License
+```
+├── package.json          # dsh.bundle patch + dsh.client manifest (official contract)
+├── cordis.patch.yml      # inserts the ui-skin-dskin row into the web roster
+├── skin.json             # skin metadata
+├── tsdown.shared.ts      # self-contained port of the official clientBundle preset
+├── web-platform.ts       # official platform module table (external judgement)
+├── src/client/
+│   ├── index.ts          # apply(ctx) + PixelPet state machine (idle/blink/walk/jump)
+│   ├── mascots.ts        # 8-frame pet pixel SVGs (generated by scripts/gen-mascots.mjs)
+│   └── dskin.module.css  # styles, all scoped under body[data-dsh-dskin]
+├── tests/apply.spec.ts   # apply/dispose contract tests
+├── assets/               # logo + banner promo art
+└── scripts/              # pet frame / preview / promo generators
+```
 
-MIT — see [LICENSE](LICENSE).
+**Skin contract (official standard)**: pure presentation; styles scoped under
+`body[data-dsh-dskin]` (dark `[data-ds-dark-theme]`); `apply(ctx)` retracts
+everything it writes in the `ctx.effect` disposer; CSS Modules are injected and
+removed by the loader; no static assets (pets are inline SVGs).
+
+## 📄 License
+
+MIT License. Original logo and pixel art; the whale pays homage to the
+DeepSeek whale mascot.

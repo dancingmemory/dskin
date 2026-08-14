@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * apply() owns the whole pixel surface and retracts it on fiber dispose: the
- * body attribute the stylesheet is scoped on, the pet node, the injected
+ * body attribute the stylesheet is scoped on, the pet troop, the injected
  * favicon, and the document title. Assert the writes and the teardown both
  * ways — including that a session title projected over the skin title is
  * never clobbered by skin teardown.
@@ -28,26 +28,31 @@ afterEach(async () => {
 })
 
 describe('DSKIN skin apply', () => {
-  it('mounts the pixel surface: attribute, pet, favicon, title', async () => {
+  it('mounts the pixel surface: attribute, pet troop, favicon, title', async () => {
     document.title = 'DeepSeek Harness'
     fiber = await mount()
 
     expect(document.body.dataset.dshDskin).toBe('')
-    const pet = document.body.querySelector('[class*="pixelPet"]')
-    expect(pet).not.toBeNull()
-    expect(pet?.querySelector('svg')).not.toBeNull()
+    const pets = document.body.querySelectorAll('[class*="pixelPetMouse"],[class*="pixelPetWhale"]')
+    // 3 pets (2 mice + 1 whale), each with an svg sprite
+    expect(pets.length).toBeGreaterThanOrEqual(3)
+    expect(document.body.querySelector('[class*="pixelPetWhale"]')).not.toBeNull()
+    expect(document.body.querySelector('[class*="pixelPetMouse"]')).not.toBeNull()
+    for (const pet of pets) {
+      expect(pet.querySelector('svg')).not.toBeNull()
+    }
     expect(document.title).toBe('DSKIN · DeepSeek Harness')
     expect(document.head.querySelector('link[rel="icon"]')).not.toBeNull()
   })
 
-  it('pet reacts to click without breaking', async () => {
+  it('pets react to click without breaking', async () => {
     document.title = 'DeepSeek Harness'
     fiber = await mount()
-    const pet = document.body.querySelector('[class*="pixelPet"]')
+    const pet = document.body.querySelector('[class*="pixelPetMouse"],[class*="pixelPetWhale"]')
     expect(pet).not.toBeNull()
     pet?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(document.body.querySelector('[class*="pixelPet"]')).not.toBeNull()
-    // dispose cancels the rAF loop and drops the node
+    expect(document.body.querySelectorAll('[class*="pixelPetMouse"],[class*="pixelPetWhale"]').length).toBeGreaterThanOrEqual(3)
+    // dispose cancels the rAF loops and drops every node
     await fiber.dispose()
     fiber = undefined
     expect(document.body.querySelector('[class*="pixelPet"]')).toBeNull()
