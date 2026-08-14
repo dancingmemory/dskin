@@ -49,6 +49,11 @@
   width: 42px;
 }
 
+/* the mice keep the full sprite size (class kept so the kind is addressable) */
+.pixelPetMouse .pixelPetSprite {
+  width: 42px;
+}
+
 /* idle bob: two-step pixel bounce */
 .pixelPet[data-pet-state='idle'] .pixelPetSprite {
   animation: pet-bob 0.5s steps(2, end) infinite;
