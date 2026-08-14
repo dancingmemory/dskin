@@ -52,7 +52,7 @@ corner lets you toggle the palette to pick any kitten you like.
 | 🐱 **Pixel favicon** | current kitten head + product title `DSKIN · DeepSeek Harness` |
 | ✅ **Zero intrusion** | native fonts, buttons, inputs, scrollbars and layout |
 
-## 🖼️ Previews
+## 🐱 Kitten Close-ups
 
 | Light | Dark |
 | --- | --- |
