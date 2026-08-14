@@ -28,7 +28,8 @@
 
 .pixelPetFlip {
   transform-origin: center bottom;
-  transition: transform 0.15s steps(2, end);
+  /* smooth turn-around: continuous scaleX(-1) sweep instead of a stepped pop */
+  transition: transform 0.18s cubic-bezier(0.5, 0.15, 0.5, 1);
 }
 
 .pixelPetFlip[data-pet-flip='1'] {
