@@ -268,11 +268,9 @@ class PixelPet {
   private lastNow = 0
   private raf = 0
 
-  /* 2D roaming */
-  private roamX = 0
-  private roamY = 0
-  /** until this timestamp the cat only roams near its landing spot */
+  /* 2D roaming (replaced by bottom-walking + drop-and-play) */
   private playUntil = 0
+  private nextPlayHopAt = 0
 
   private interacting = false
   private interactEnd = 0
@@ -397,16 +395,15 @@ class PixelPet {
     return { top: vh - ZONE_HEIGHT, bottom: vh - SPRITE_H - this.spec.bottom, left: EDGE, right: vw - w - EDGE }
   }
 
-  /** Pick a roam target: near the landing spot while playing, else anywhere in the zone. */
-  private pickRoamTarget(now: number): void {
+  /** Begin a slow descent back to the bottom edge. */
+  private beginReturn(): void {
     const zone = this.zone()
-    if (now < this.playUntil) {
-      this.roamX = Math.max(zone.left, Math.min(zone.right, this.x + rand(-150, 150)))
-      this.roamY = Math.max(zone.top + 8, Math.min(zone.bottom, this.y + rand(-70, 30)))
-    } else {
-      this.roamX = rand(zone.left, zone.right)
-      this.roamY = rand(zone.top + 8, zone.bottom)
-    }
+    this.returnFromX = this.x
+    this.returnFromY = this.y
+    this.returnToX = Math.max(zone.left, Math.min(zone.right, this.x))
+    this.returnToY = zone.bottom
+    this.returnT = 0
+    this.setState('return')
   }
 
   private readonly onPointerDown = (e: PointerEvent): void => {
@@ -489,20 +486,15 @@ class PixelPet {
     const zone = this.zone()
     const inside = this.y >= zone.top - 24 && this.y <= zone.bottom + 24 && this.x >= zone.left && this.x <= zone.right
     if (inside) {
-      // dropped inside the zone: the cat stays where it landed and plays
-      // near that spot for a while before roaming the whole zone again
+      // dropped inside the zone: the cat stays at the landing spot and plays
+      // there, then slowly descends back to the bottom
       this.playUntil = performance.now() + PLAY_LOCAL_MS
+      this.nextPlayHopAt = 0
       this.el.style.top = `${Math.round(this.y)}px`
       this.setState('idle')
-      this.nextWalkAt = performance.now() + rand(400, 1200)
     } else {
-      // dropped outside the zone: a slow, graceful descent back into it
-      this.returnFromX = this.x
-      this.returnFromY = this.y
-      this.returnToX = Math.max(zone.left, Math.min(zone.right, this.x))
-      this.returnToY = zone.bottom
-      this.returnT = 0
-      this.setState('return')
+      // dropped above the zone: a slow, graceful descent back into it
+      this.beginReturn()
     }
   }
 
@@ -577,9 +569,10 @@ class PixelPet {
       this.el.style.left = `${Math.round(this.x)}px`
       this.el.style.top = `${Math.round(this.y)}px`
       if (this.returnT >= 1) {
-        this.playUntil = now + rand(3000, 7000)
+        this.y = this.returnToY
+        this.el.style.top = `${Math.round(this.y)}px`
         this.setState('idle')
-        this.nextWalkAt = now + rand(800, 2000)
+        this.nextWalkAt = now + rand(400, 1200)
       }
       return
     }
@@ -594,49 +587,51 @@ class PixelPet {
         this.sprite.innerHTML = this.spec.frames.idle
         this.nextBlinkAt = now + rand(1800, 5000)
       }
+      if (now < this.playUntil) {
+        // playing where the human dropped it: stay put, hop playfully
+        if (this.nextPlayHopAt < now) {
+          this.nextPlayHopAt = now + rand(1500, 3500)
+          this.hop()
+        }
+        return
+      }
+      if (this.y > this.zone().bottom + 2) {
+        // still above the bottom after playing: float back down slowly
+        this.beginReturn()
+        return
+      }
       if (this.nextWalkAt < now) {
-        // roam toward a new spot anywhere in the zone (or near the landing
-        // spot while the cat is still "playing" after a drop)
-        this.pickRoamTarget(now)
+        // bottom-walking: keep the current direction (turns only at edges)
         this.setState('walk')
-        const facing = this.roamX >= this.x ? 1 : -1
-        this.direction = facing
-        this.flip.dataset.petFlip = String(-facing)
-        this.walkUntil = now + rand(2000, 5000)
+        this.walkUntil = now + rand(2500, 6000)
         this.sprite.innerHTML = this.spec.frames.walkA
         this.walkFrame = 0
       }
     } else {
-      // 2D roam: step toward the target, drifting up/down gently too
+      // walk along the bottom edge, turning only at the edges
       const zone = this.zone()
-      const dx = this.roamX - this.x
-      const dy = this.roamY - this.y
-      const dist = Math.hypot(dx, dy)
-      if (dist < 5) {
+      this.x += this.direction * this.spec.speed * dt
+      if (this.x <= zone.left) {
+        this.x = zone.left
+        this.direction = 1
+        this.flip.dataset.petFlip = '-1'
+      } else if (this.x >= zone.right) {
+        this.x = zone.right
+        this.direction = -1
+        this.flip.dataset.petFlip = '1'
+      }
+      this.y = zone.bottom
+      this.el.style.left = `${Math.round(this.x)}px`
+      this.el.style.top = `${Math.round(this.y)}px`
+      if (now >= this.nextWalkFlip) {
+        this.nextWalkFlip = now + WALK_FRAME_MS
+        this.walkFrame = this.walkFrame === 0 ? 1 : 0
+        this.sprite.innerHTML = this.walkFrame === 0 ? this.spec.frames.walkA : this.spec.frames.walkB
+      }
+      if (this.walkUntil < now) {
         this.setState('idle')
         this.sprite.innerHTML = this.spec.frames.idle
-        this.nextWalkAt = now + rand(700, 2200)
-      } else {
-        const step = this.spec.speed * dt
-        this.x = Math.max(zone.left, Math.min(zone.right, this.x + Math.sign(dx) * step))
-        this.y = Math.max(zone.top + 8, Math.min(zone.bottom, this.y + Math.sign(dy) * step * 0.6))
-        const facing = Math.sign(dx) as 1 | -1
-        if (facing !== this.direction) {
-          this.direction = facing
-          this.flip.dataset.petFlip = String(-facing)
-        }
-        this.el.style.left = `${Math.round(this.x)}px`
-        this.el.style.top = `${Math.round(this.y)}px`
-        if (now >= this.nextWalkFlip) {
-          this.nextWalkFlip = now + WALK_FRAME_MS
-          this.walkFrame = this.walkFrame === 0 ? 1 : 0
-          this.sprite.innerHTML = this.walkFrame === 0 ? this.spec.frames.walkA : this.spec.frames.walkB
-        }
-        if (this.walkUntil < now) {
-          this.setState('idle')
-          this.sprite.innerHTML = this.spec.frames.idle
-          this.nextWalkAt = now + rand(1000, 2500)
-        }
+        this.nextWalkAt = now + rand(800, 2500)
       }
     }
   }
