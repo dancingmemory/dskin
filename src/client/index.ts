@@ -40,9 +40,6 @@ import {
   KIT_WHITE_WALK_B,
 } from './mascots.ts'
 
-/** The product title the skin pins. */
-const SKIN_TITLE = 'DSKIN · DeepSeek Harness'
-
 /** Walk-frame flip interval in ms while walking. */
 const WALK_FRAME_MS = 200
 
@@ -1035,7 +1032,6 @@ class CatPanel {
  */
 export function apply(ctx: Context): void {
   const body = document.body
-  const originalTitle = document.title
   body.dataset.dshDskin = ''
 
   // Restore the troop (count + per-slot breeds) or roll a random one.
@@ -1060,26 +1056,12 @@ export function apply(ctx: Context): void {
   const updater = new UpdateChecker()
   const panel = new CatPanel(manager, updater)
 
-  const favicon = document.createElement('link')
-  favicon.rel = 'icon'
-  favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(manager.selectedType() ?? kittenById(loadKittenId()).id).face)}`
-  // insert before any existing icon link so the kitten head wins in the tab
-  const existingIcon = document.head.querySelector('link[rel="icon"], link[rel="shortcut icon"]')
-  document.head.insertBefore(favicon, existingIcon)
-
-  // keep the panel + favicon in sync with selection / breed / count changes
-  const refresh = (): void => {
-    panel.render()
-    const type = manager.selectedType() ?? kittenById(loadKittenId()).id
-    favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(type).face)}`
-  }
-  manager.onStateChange = refresh
+  // keep the panel in sync with selection / breed / count changes
+  manager.onStateChange = () => panel.render()
   updater.onChange = () => panel.render()
   const initialCheck = window.setTimeout(() => void updater.check(), 10000)
   const intervalCheck = window.setInterval(() => void updater.check(), UPDATE_CHECK_INTERVAL)
   panel.attach()
-
-  document.title = SKIN_TITLE
 
   ctx.effect(() => () => {
     delete body.dataset.dshDskin
@@ -1087,12 +1069,5 @@ export function apply(ctx: Context): void {
     window.clearInterval(intervalCheck)
     manager.dispose()
     panel.dispose()
-    favicon.remove()
-    if (document.title === SKIN_TITLE) document.title = originalTitle
-  }, 'ui-skin-dskin: DSKIN kittens + panel')
-}
-
-/** Favicon shows whichever kitten is currently selected. */
-function kittenPetFavicon(): string {
-  return kittenById(loadKittenId()).face
+  }, 'ui-skin-dskin: kittens + panel')
 }

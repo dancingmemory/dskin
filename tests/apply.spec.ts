@@ -43,7 +43,7 @@ describe('DSKIN updater', () => {
 })
 
 describe('DSKIN skin apply', () => {
-  it('mounts the pixel surface: attribute, pet troop, switcher, favicon, title', async () => {
+  it('mounts the pixel surface: attribute, pet troop, switcher', async () => {
     document.title = 'DeepSeek Harness'
     fiber = await mount()
 
@@ -58,8 +58,7 @@ describe('DSKIN skin apply', () => {
     }
     expect(document.body.querySelector('[class*="pixelPaw"]')).not.toBeNull()
     expect(document.body.querySelector('[class*="pixelPalette"]')).not.toBeNull()
-    expect(document.title).toBe('DSKIN · DeepSeek Harness')
-    expect(document.head.querySelector('link[rel="icon"]')).not.toBeNull()
+    expect(document.title).toBe('DeepSeek Harness') // the app's own title is untouched
   })
 
   it('switches the kitten through the paw palette', async () => {
@@ -191,16 +190,15 @@ describe('DSKIN skin apply', () => {
     expect(document.body.querySelector('[class*="pixelPet"]')).toBeNull()
     expect(document.body.querySelector('[class*="pixelPaw"]')).toBeNull()
     expect(document.body.querySelector('[class*="pixelPalette"]')).toBeNull()
-    expect(document.head.querySelector('link[rel="icon"]')).toBeNull()
     expect(document.title).toBe('DeepSeek Harness')
   })
 
-  it('never clobbers a session title projected over the skin title on teardown', async () => {
+  it('never touches the app title', async () => {
+    document.title = '我的 DeepSeek 会话'
     fiber = await mount()
-    document.title = '我的会话 — DSKIN · DeepSeek Harness'
+    expect(document.title).toBe('我的 DeepSeek 会话')
     await fiber.dispose()
     fiber = undefined
-
-    expect(document.title).toBe('我的会话 — DSKIN · DeepSeek Harness')
+    expect(document.title).toBe('我的 DeepSeek 会话')
   })
 })
