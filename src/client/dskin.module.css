@@ -103,6 +103,28 @@
   display: none;
 }
 
+/* selection marker: tiny bouncing star above the cat being recolored */
+.pixelPetSelected {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  font-size: 13px;
+  line-height: 1;
+  color: #ffb300;
+  text-shadow: 0 1px 0 rgba(46, 58, 89, 0.4);
+  pointer-events: none;
+  animation: selected-bounce 0.5s steps(2, end) infinite;
+}
+
+.pixelPetSelected[hidden] {
+  display: none;
+}
+
+@keyframes selected-bounce {
+  0%, 100% { transform: translate(-50%, 0) scale(1); }
+  50% { transform: translate(-50%, -3px) scale(1.15); }
+}
+
 /* petting feedback: floating hearts */
 .pixelPetHeart {
   position: absolute;
@@ -373,6 +395,13 @@
 .pixelPaletteItem:hover {
   border-color: rgba(46, 58, 89, 0.55);
   background: rgba(255, 210, 100, 0.25);
+}
+
+/* the breed the selected cat currently wears is highlighted */
+.pixelPaletteItem[data-active='1'] {
+  border-color: #ffb300;
+  background: rgba(255, 210, 100, 0.35);
+  box-shadow: 2px 2px 0 rgba(255, 179, 0, 0.35);
 }
 
 .pixelPaletteItem:active {

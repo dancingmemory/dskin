@@ -135,6 +135,30 @@ describe('DSKIN skin apply', () => {
     fiber = undefined
   })
 
+  it('selected cat shows the star marker and breed highlight follows it', async () => {
+    fiber = await mount()
+    const kittens = document.body.querySelectorAll(PET_SELECTOR)
+    expect(kittens.length).toBeGreaterThanOrEqual(1)
+    // first cat is selected by default → its marker is visible
+    const marker = kittens[0]?.querySelector('[class*="pixelPetSelected"]') as HTMLElement | null
+    expect(marker).not.toBeNull()
+    expect(marker?.hidden).toBe(false)
+    // select the last cat → markers move
+    if (kittens.length > 1) {
+      kittens[kittens.length - 1]?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      expect((kittens[kittens.length - 1]?.querySelector('[class*="pixelPetSelected"]') as HTMLElement | null)?.hidden).toBe(false)
+      expect((kittens[0]?.querySelector('[class*="pixelPetSelected"]') as HTMLElement | null)?.hidden).toBe(true)
+    }
+    // open the panel → one breed button is highlighted (data-active=1)
+    const paw = document.body.querySelector('[class*="pixelPaw"]')
+    paw?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    const palette = document.body.querySelector('[class*="pixelPalette"]')
+    const active = palette?.querySelectorAll('[class*="pixelPaletteItem"][data-active="1"]') ?? []
+    expect(active.length).toBe(1)
+    await fiber.dispose()
+    fiber = undefined
+  })
+
   it('retracts everything on fiber dispose', async () => {
     document.title = 'DeepSeek Harness'
     fiber = await mount()

@@ -252,6 +252,7 @@ class PixelPet {
   private readonly hang: HTMLDivElement
   private readonly flip: HTMLDivElement
   private readonly sprite: HTMLDivElement
+  private readonly marker: HTMLSpanElement
   private spec: PetSpec
 
   private state: PetState = 'idle'
@@ -316,7 +317,12 @@ class PixelPet {
     shadow.className = cls('pixelPetShadow')
     this.flip.append(this.sprite)
     this.hang.append(this.flip)
-    this.el.append(this.hang, shadow)
+    // selection marker: a tiny star above the cat that is being recolored
+    this.marker = document.createElement('span')
+    this.marker.className = cls('pixelPetSelected')
+    this.marker.textContent = '★'
+    this.marker.hidden = true
+    this.el.append(this.hang, shadow, this.marker)
     // top-based positioning everywhere (bottom stays a CSS fallback only)
     const vh = window.innerHeight ?? document.documentElement.clientHeight ?? 900
     this.y = vh - SPRITE_H - spec.bottom
@@ -506,8 +512,13 @@ class PixelPet {
 
   /** Mark this cat as the currently-selected one (for the type switcher). */
   setSelected(selected: boolean): void {
-    if (selected) this.el.dataset.petSelected = '1'
-    else delete this.el.dataset.petSelected
+    if (selected) {
+      this.el.dataset.petSelected = '1'
+      this.marker.hidden = false
+    } else {
+      delete this.el.dataset.petSelected
+      this.marker.hidden = true
+    }
   }
 
   /** Whether the given node is inside this cat. */
@@ -714,6 +725,8 @@ function saveCatState(state: CatState): void {
 /** Owns the kitten troop: spawn, remove, select, per-cat type switching. */
 class CatManager {
   readonly cats: PixelPet[] = []
+  /** Fired after selection / breed / count changes (drives UI refresh). */
+  onStateChange: (() => void) | null = null
   private selected: PixelPet | null = null
   private types: KittenId[] = []
   private interactRaf = 0
@@ -755,6 +768,7 @@ class CatManager {
     this.selected = cat
     cat.setSelected(true)
     cat.hop()
+    this.onStateChange?.()
   }
 
   getSelected(): PixelPet | null {
@@ -769,6 +783,7 @@ class CatManager {
     this.types[idx] = type
     cat.setFrames(kittenById(type).frames)
     this.persist()
+    this.onStateChange?.()
   }
 
   /** Change how many cats live in the troop (1–4). */
@@ -788,6 +803,7 @@ class CatManager {
       this.selected.setSelected(true)
     }
     this.persist()
+    this.onStateChange?.()
   }
 
   getCount(): number {
@@ -839,6 +855,7 @@ class CatPanel {
   private readonly countLabel: HTMLSpanElement
   private readonly versionLabel: HTMLSpanElement
   private readonly updateRow: HTMLDivElement
+  private readonly breedItems: HTMLButtonElement[] = []
   private open = false
   private readonly onDocClick: (e: MouseEvent) => void
 
@@ -890,6 +907,7 @@ class CatPanel {
         e.stopPropagation()
         this.pickType(k)
       })
+      this.breedItems.push(item)
       breedRow.append(item)
     }
     this.palette.append(breedRow, hint)
@@ -936,6 +954,11 @@ class CatPanel {
 
   private render(): void {
     this.countLabel.textContent = String(this.manager.getCount())
+    // highlight the breed button matching the selected cat
+    const selType = this.manager.selectedType()
+    for (const item of this.breedItems) {
+      item.dataset.active = item.dataset.catType === selType ? '1' : '0'
+    }
     const checker = this.updater
     if (checker.hasUpdate) {
       this.versionLabel.textContent = `当前 v${DSKIN_VERSION} · 发现新版本 v${checker.latest}`
@@ -1021,15 +1044,24 @@ export function apply(ctx: Context): void {
   // built-in updater: first check after boot, then periodically
   const updater = new UpdateChecker()
   const panel = new CatPanel(manager, updater)
-  updater.onChange = () => panel.render()
-  const initialCheck = window.setTimeout(() => void updater.check(), 10000)
-  const intervalCheck = window.setInterval(() => void updater.check(), UPDATE_CHECK_INTERVAL)
-  panel.attach()
 
   const favicon = document.createElement('link')
   favicon.rel = 'icon'
   favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(manager.selectedType()).face)}`
-  document.head.append(favicon)
+  // insert before any existing icon link so the kitten head wins in the tab
+  const existingIcon = document.head.querySelector('link[rel="icon"], link[rel="shortcut icon"]')
+  document.head.insertBefore(favicon, existingIcon)
+
+  // keep the panel + favicon in sync with selection / breed / count changes
+  const refresh = (): void => {
+    panel.render()
+    favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(manager.selectedType()).face)}`
+  }
+  manager.onStateChange = refresh
+  updater.onChange = () => panel.render()
+  const initialCheck = window.setTimeout(() => void updater.check(), 10000)
+  const intervalCheck = window.setInterval(() => void updater.check(), UPDATE_CHECK_INTERVAL)
+  panel.attach()
 
   document.title = SKIN_TITLE
 
