@@ -101,12 +101,12 @@ const HEART_INTERVAL = 1400
 const HANG_Y = 2
 
 /**
- * Where the hanging cat's element is pinned (px from the top). The 180°
- * rotation plus the sway animation pushes the sprite's bounding box ~32px
- * above the element — pin it 34px down so the upside-down cat (and its sway)
- * is fully visible and never clipped by the top edge.
+ * Where the hanging cat's element is pinned (px from the top). The sprite is
+ * rotated about its own center, so it stays inside its box — a 4px pin keeps
+ * the upside-down cat fully visible while letting it follow the pointer
+ * almost immediately (no drag dead zone).
  */
-const HANG_PIN_Y = 34
+const HANG_PIN_Y = 4
 
 /** Pull distance (px) below the latch line to un-hang back into a drag. */
 const UNHANG_DRAG = 40
@@ -486,8 +486,10 @@ class PixelPet {
       delete this.el.dataset.petHang
     }
 
+    // while hanging the cat follows the pointer down smoothly (no dead zone),
+    // but never above the hang pin position
     this.x = nextX
-    this.y = this.hanging ? HANG_PIN_Y : nextY
+    this.y = this.hanging ? Math.max(HANG_PIN_Y, nextY) : nextY
     this.el.style.left = `${Math.round(this.x)}px`
     this.el.style.top = `${Math.round(this.y)}px`
   }

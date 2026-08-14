@@ -75,7 +75,8 @@
   animation: pet-dangle 0.3s steps(3, end) infinite;
 }
 
-/* hanging from the top edge: upside-down sway */
+/* hanging from the top edge: upside-down sway (rotated about its own
+   center so the sprite stays inside its box — fully clickable) */
 .pixelPet[data-pet-state='hang'] .pixelPetHang {
   animation: pet-hang-sway 0.5s steps(3, end) infinite;
 }
@@ -83,7 +84,7 @@
 .pixelPet[data-pet-state='hang'] .pixelPetSprite {
   animation: none;
   transform: rotate(180deg);
-  transform-origin: center 4px;
+  transform-origin: center center;
 }
 
 @keyframes pet-hang-sway {
