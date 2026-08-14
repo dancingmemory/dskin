@@ -65,6 +65,30 @@ corner lets you toggle the palette to pick any kitten you like.
 ![Paw Button](assets/paw-button.png)
 *Paw switcher button (bottom-right)*
 
+## 🤖 One-Click Install (hand to your AI)
+
+Copy the line below and paste it to your AI assistant (e.g. opencode / Claude / a DSH agent):
+
+> **Please install the https://github.com/dancingmemory/dskin plugin on my DSH and make it show up in the plugin tools.**
+
+The AI should run:
+
+```sh
+# 1. install the plugin (into the web profile)
+dsh plugin --profile web add github:dancingmemory/dskin
+
+# 2. if pnpm ≥ 10 blocks build scripts, append this to
+#    ~/.dsh/profiles/web/pnpm-workspace.yaml and re-run step 1
+#    allowBuilds:
+#      dskin: true
+
+# 3. restart the web service so the plugin enters the loading graph
+dsh web
+
+# 4. verify: Settings → Plugins lists dskin (ui-skin-dskin), the 🐾 paw
+#    button appears bottom-right, and kittens stroll at the screen edge
+```
+
 ## 📦 Install
 
 Requires the DeepSeek Harness `dsh` CLI (or `npx @deepseek-ai/dsh`).

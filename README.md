@@ -56,6 +56,30 @@ DSKIN 在 DSH Web 中的实际效果（暗色主题）：
 - **点击**：猫跳一下。
 - **切换品种**：右下角 🐾 面板——先点一只小猫选中，再点品种按钮只给那只换装；`− ＋` 可以加减小猫数量。
 
+## 🤖 一键安装（丢给 AI）/ One-Click Install (hand to your AI)
+
+复制下面这句话，发给你的 AI 助手（例如 opencode / Claude / 或 DSH 自带的智能体）：
+
+> **请给我的 DSH 安装 https://github.com/dancingmemory/dskin 插件，并在插件工具中显示。**
+
+AI 应该按以下步骤执行：
+
+```sh
+# 1. 安装插件（写入 web profile）
+dsh plugin --profile web add github:dancingmemory/dskin
+
+# 2. 若 pnpm ≥ 10 提示构建脚本被阻止，把下面内容追加到
+#    ~/.dsh/profiles/web/pnpm-workspace.yaml 后重跑第 1 步
+#    allowBuilds:
+#      dskin: true
+
+# 3. 重启 web 服务，插件进入加载图谱
+dsh web
+
+# 4. 验证：设置 → 插件 中应看到 dskin（ui-skin-dskin），
+#    页面右下角出现 🐾 爪爪按钮，屏幕底边有小猫散步
+```
+
 ## 📦 安装 / Install
 
 要求：DeepSeek Harness `dsh` CLI（或 `npx @deepseek-ai/dsh`）。
