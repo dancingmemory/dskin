@@ -112,6 +112,13 @@ dsh web        # 安装后重启，让新插件行进入加载图谱
 [github.com/topics/dsh-plugin](https://github.com/topics/dsh-plugin) 下被索引到，
 另带 `dsh` / `deepseek-harness` / `pixel-art` 等标签。
 
+## ⭐ Star 趋势 / Star History
+
+![star-history](https://api.star-history.com/svg?repos=dancingmemory/dskin&type=Date)
+
+> 喜欢 DSKIN？点个 ⭐ 支持一下，趋势图会自动更新。
+> *Like DSKIN? Hit ⭐ and watch the curve grow.*
+
 ## 🛠️ 开发 / Development
 
 ```sh

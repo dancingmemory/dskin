@@ -123,8 +123,15 @@ pnpm pack && dsh plugin --profile web add ./dskin-0.3.0.tgz
 dsh web        # restart after installing — plugin rows load at boot only
 ```
 
-Open `http://127.0.0.1:3080` — the pets are already strolling on the grass.
-To revert: `dsh plugin --profile web remove dskin` and restart.
+Open `http://127.0.0.1:3080` — the kittens are already strolling at the
+bottom edge. To revert: `dsh plugin --profile web remove dskin` and restart.
+
+## ⭐ Star History
+
+![star-history](https://api.star-history.com/svg?repos=dancingmemory/dskin&type=Date)
+
+> Like DSKIN? Hit ⭐ and watch the curve grow.
+> *喜欢 DSKIN？点个 ⭐ 支持一下，趋势图会自动更新。*
 
 ## 🛠️ Development
 
