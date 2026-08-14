@@ -62,6 +62,9 @@ const SPRITE_H = 32
 /** How long a dropped cat plays near its landing spot before roaming free. */
 const PLAY_LOCAL_MS = 9000
 
+/** How long the selection star stays visible before auto-clearing. */
+const SELECT_MS = 10000
+
 /** Distance in px at which two cats trigger an interaction. */
 const INTERACT_DIST = 60
 
@@ -729,6 +732,7 @@ class CatManager {
   onStateChange: (() => void) | null = null
   private selected: PixelPet | null = null
   private types: KittenId[] = []
+  private selectTimer = 0
   private interactRaf = 0
   private lastInteractCheck = 0
 
@@ -761,18 +765,35 @@ class CatManager {
     this.interactRaf = requestAnimationFrame(this.checkInteractions)
   }
 
-  /** Select a cat: it becomes the target of the type switcher. */
+  /** Select a cat: it becomes the target of the type switcher. The star
+   *  marker auto-clears after SELECT_MS; clicking again re-selects. */
   select(cat: PixelPet): void {
-    if (this.selected === cat) return
     this.selected?.setSelected(false)
     this.selected = cat
     cat.setSelected(true)
     cat.hop()
+    window.clearTimeout(this.selectTimer)
+    this.selectTimer = window.setTimeout(() => this.clearSelection(), SELECT_MS)
+    this.onStateChange?.()
+  }
+
+  /** Drop the current selection (star disappears). */
+  clearSelection(): void {
+    window.clearTimeout(this.selectTimer)
+    this.selected?.setSelected(false)
+    this.selected = null
     this.onStateChange?.()
   }
 
   getSelected(): PixelPet | null {
     return this.selected
+  }
+
+  /** The breed of the selected cat (null when nothing is selected). */
+  selectedType(): KittenId | null {
+    const cat = this.selected
+    if (!cat) return null
+    return this.types[this.cats.indexOf(cat)] ?? null
   }
 
   /** Change the selected cat's breed. */
@@ -810,13 +831,6 @@ class CatManager {
     return this.cats.length
   }
 
-  /** The breed of the selected cat (drives the favicon). */
-  selectedType(): KittenId {
-    const cat = this.selected
-    if (!cat) return kittenById(loadKittenId()).id
-    return this.types[this.cats.indexOf(cat)] ?? kittenById(loadKittenId()).id
-  }
-
   private persist(): void {
     saveCatState({ count: this.cats.length, types: this.types })
   }
@@ -843,6 +857,7 @@ class CatManager {
   }
 
   dispose(): void {
+    window.clearTimeout(this.selectTimer)
     cancelAnimationFrame(this.interactRaf)
     for (const cat of this.cats) cat.dispose()
   }
@@ -954,10 +969,10 @@ class CatPanel {
 
   private render(): void {
     this.countLabel.textContent = String(this.manager.getCount())
-    // highlight the breed button matching the selected cat
+    // highlight the breed button matching the selected cat (none when idle)
     const selType = this.manager.selectedType()
     for (const item of this.breedItems) {
-      item.dataset.active = item.dataset.catType === selType ? '1' : '0'
+      item.dataset.active = selType !== null && item.dataset.catType === selType ? '1' : '0'
     }
     const checker = this.updater
     if (checker.hasUpdate) {
@@ -1047,7 +1062,7 @@ export function apply(ctx: Context): void {
 
   const favicon = document.createElement('link')
   favicon.rel = 'icon'
-  favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(manager.selectedType()).face)}`
+  favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(manager.selectedType() ?? kittenById(loadKittenId()).id).face)}`
   // insert before any existing icon link so the kitten head wins in the tab
   const existingIcon = document.head.querySelector('link[rel="icon"], link[rel="shortcut icon"]')
   document.head.insertBefore(favicon, existingIcon)
@@ -1055,7 +1070,8 @@ export function apply(ctx: Context): void {
   // keep the panel + favicon in sync with selection / breed / count changes
   const refresh = (): void => {
     panel.render()
-    favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(manager.selectedType()).face)}`
+    const type = manager.selectedType() ?? kittenById(loadKittenId()).id
+    favicon.href = `data:image/svg+xml;utf8,${encodeURIComponent(kittenById(type).face)}`
   }
   manager.onStateChange = refresh
   updater.onChange = () => panel.render()

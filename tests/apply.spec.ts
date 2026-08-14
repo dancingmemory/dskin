@@ -7,7 +7,7 @@
  * including that a session title projected over the skin title is never
  * clobbered by skin teardown.
  */
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context, type Fiber } from '@deepseek-ai/cordis'
 import { apply, compareVersions } from '../src/client/index.ts'
 
@@ -156,6 +156,28 @@ describe('DSKIN skin apply', () => {
     const active = palette?.querySelectorAll('[class*="pixelPaletteItem"][data-active="1"]') ?? []
     expect(active.length).toBe(1)
     await fiber.dispose()
+    fiber = undefined
+  })
+
+  it('selection star auto-clears after 10s and re-selects on click', async () => {
+    vi.useFakeTimers()
+    try {
+      fiber = await mount()
+      const kittens = document.body.querySelectorAll(PET_SELECTOR)
+      const first = kittens[0] as HTMLElement
+      const marker = () => first.querySelector('[class*="pixelPetSelected"]') as HTMLElement
+      // selected on mount → star visible
+      expect(marker().hidden).toBe(false)
+      // after 10s the star disappears
+      vi.advanceTimersByTime(10000)
+      expect(marker().hidden).toBe(true)
+      // clicking again re-selects → star back
+      first.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      expect(marker().hidden).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+    await fiber?.dispose()
     fiber = undefined
   })
 
