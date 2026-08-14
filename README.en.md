@@ -30,10 +30,10 @@
 no layout changes — it just keeps a troop of small pixel pets at the bottom
 edge of your screen.
 
-A **single switchable pixel kitten** (🐱 大橘 orange tabby / 小白 white /
-玄猫 black / 花猫 tuxedo). It hugs the screen edge and never blocks the view.
-Click it and it hops; hover and it bounces. The **paw button 🐾** in the
-bottom-right corner switches between the 4 kittens — your choice is remembered.
+Each page load spawns **1–4 random kittens** (🐱 大橘 orange tabby / 小白 white /
+玄猫 black / 花猫 tuxedo) that stroll along the bottom edge. They approach,
+chase, and play with each other. The **paw button 🐾** in the bottom-right
+corner lets you toggle the palette to pick any kitten you like.
 
 > **Pure presentation skin**: no service injection, no cordis events, no model
 > traffic. Follows the official `dsh.client` client plugin contract —
@@ -43,9 +43,11 @@ bottom-right corner switches between the 4 kittens — your choice is remembered
 
 | | |
 | --- | --- |
-| 🐱 **4 switchable kittens** | 大橘 orange / 小白 white / 玄猫 black / 花猫 tuxedo — pick via the 🐾 paw button, choice remembered |
+| 🐱 **1–4 random kittens** | each page load spawns a random crew that stroll along the bottom edge |
+| 🤝 **Kitten interactions** | kittens approach, chase, and play with each other |
+| 🐾 **Paw button** | bottom-right switcher to toggle the palette and pick any kitten |
 | 👟 **Living pets** | stepping / blinking / edge turns / hover bounce / click hop / pixel shadow |
-| 📏 **No obstruction** | a single tiny kitten at the screen edge; no frame, no background, native UI |
+| 📏 **No obstruction** | pets stay at the screen edge; no frame, no background, native UI |
 | 🐱 **Pixel favicon** | current kitten head + product title `DSKIN · DeepSeek Harness` |
 | ✅ **Zero intrusion** | native fonts, buttons, inputs, scrollbars and layout |
 
@@ -54,6 +56,14 @@ bottom-right corner switches between the 4 kittens — your choice is remembered
 | Light | Dark |
 | --- | --- |
 | ![light](preview/light.png) | ![dark](preview/dark.png) |
+
+### 🎮 Controls
+
+![Cat Palette](assets/cat-palette.png)
+*Pixel kitten selector panel*
+
+![Paw Button](assets/paw-button.png)
+*Paw switcher button (bottom-right)*
 
 ## 📦 Install
 
@@ -91,12 +101,6 @@ dsh web        # restart after installing — plugin rows load at boot only
 
 Open `http://127.0.0.1:3080` — the pets are already strolling on the grass.
 To revert: `dsh plugin --profile web remove dskin` and restart.
-
-## 🔍 Discoverability
-
-This repository carries the official **`dsh-plugin`** topic and is indexed on
-[github.com/topics/dsh-plugin](https://github.com/topics/dsh-plugin), plus the
-`dsh` / `deepseek-harness` / `pixel-art` topics.
 
 ## 🛠️ Development
 

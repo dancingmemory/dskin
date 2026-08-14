@@ -16,10 +16,14 @@
   bottom: 4px;
   z-index: 2147483001;
   pointer-events: auto;
-  cursor: pointer;
+  cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: manipulation;
+  touch-action: none;
+}
+
+.pixelPet[data-pet-state='drag'] {
+  cursor: grabbing;
 }
 
 .pixelPetFlip {
@@ -37,6 +41,11 @@
   height: auto;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+/* kitten kind class (kept so the kind is addressable in the DOM) */
+.pixelPetKitten .pixelPetSprite {
+  width: 42px;
 }
 
 /* idle bob: two-step pixel bounce */
@@ -59,6 +68,87 @@
   animation: pet-jump 0.5s steps(4, end);
 }
 
+/* dragged: dangling struggle (rotate sway) */
+.pixelPet[data-pet-state='drag'] .pixelPetSprite,
+.pixelPet[data-pet-state='return'] .pixelPetSprite {
+  animation: pet-dangle 0.3s steps(3, end) infinite;
+}
+
+/* hanging from the top edge: upside-down sway */
+.pixelPet[data-pet-state='hang'] .pixelPetHang {
+  animation: pet-hang-sway 0.5s steps(3, end) infinite;
+}
+
+.pixelPet[data-pet-state='hang'] .pixelPetSprite {
+  animation: none;
+  transform: rotate(180deg);
+  transform-origin: center 4px;
+}
+
+@keyframes pet-hang-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+/* while airborne (drag/return/hang) the shadow shrinks or vanishes */
+.pixelPet[data-pet-state='drag'] .pixelPetShadow,
+.pixelPet[data-pet-state='return'] .pixelPetShadow {
+  animation: none;
+  transform: translateX(-50%) scale(0.55);
+  opacity: 0.45;
+}
+
+.pixelPet[data-pet-state='hang'] .pixelPetShadow {
+  display: none;
+}
+
+/* petting feedback: floating hearts */
+.pixelPetHeart {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  font-size: 12px;
+  line-height: 1;
+  color: #ff6b81;
+  pointer-events: none;
+  animation: heart-float 1s steps(5, end) forwards;
+}
+
+@keyframes heart-float {
+  0% { opacity: 0; transform: translate(-50%, 4px) scale(0.6); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(1); }
+}
+
+/* drag feedback: tiny "!" bubble */
+.pixelPetBubble {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  color: #2e3a59;
+  pointer-events: none;
+  animation: bubble-pop 0.9s steps(5, end) forwards;
+}
+
+@keyframes bubble-pop {
+  0% { opacity: 0; transform: translate(-50%, 4px) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -2px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -22px) scale(1); }
+}
+
+@keyframes pet-dangle {
+  0%, 100% { transform: rotate(-5deg) translateY(2px); }
+  50% { transform: rotate(5deg) translateY(0); }
+}
+
+/* interaction: playful side-to-side wiggle with a small lift */
+.pixelPet[data-pet-interact='1'] .pixelPetSprite {
+  animation: pet-interact 0.35s steps(3, end) infinite;
+}
+
 @keyframes pet-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
@@ -75,6 +165,14 @@
   30% { transform: translateY(-22px) scale(1.04); }
   60% { transform: translateY(-8px) scale(0.98); }
   100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes pet-interact {
+  0% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(-4deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-4px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
 }
 
 .pixelPetShadow {
@@ -138,6 +236,7 @@
   bottom: 42px;
   z-index: 2147483002;
   display: flex;
+  flex-direction: column;
   gap: 6px;
   padding: 8px;
   border: 2px solid rgba(46, 58, 89, 0.7);
@@ -148,6 +247,49 @@
 
 .pixelPalette[hidden] {
   display: none;
+}
+
+.pixelCountRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pixelCountBtn {
+  width: 26px;
+  height: 24px;
+  border: 2px solid rgba(46, 58, 89, 0.7);
+  border-radius: 0;
+  background: #ffe3b8;
+  color: #2e3a59;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pixelCountBtn:active {
+  transform: translate(1px, 1px);
+}
+
+.pixelCountLabel {
+  min-width: 20px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2e3a59;
+}
+
+.pixelBreedRow {
+  display: flex;
+  gap: 6px;
+}
+
+.pixelHint {
+  font-size: 10px;
+  color: #8b93b8;
+  text-align: center;
 }
 
 .pixelPaletteItem {

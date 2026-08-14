@@ -1,7 +1,7 @@
 {
   "name": "dskin",
-  "description": "DSKIN - a cartoon pixel skin plugin for DeepSeek Harness (DSH): one switchable pixel kitten (大橘/小白/玄猫/花猫) at the screen edge, picked via a paw button. Original UI untouched.",
-  "version": "0.4.1",
+  "description": "DSKIN - cartoon pixel kittens for DeepSeek Harness (DSH): 1-4 random kittens spawn each session, they play together, you can pet them (hearts) and drag them around. Original UI untouched.",
+  "version": "1.0.5",
   "keywords": [
     "dsh-plugin",
     "deepseek-harness",

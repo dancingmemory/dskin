@@ -38,7 +38,7 @@ describe('DSKIN skin apply', () => {
 
     expect(document.body.dataset.dshDskin).toBe('')
     const pets = document.body.querySelectorAll(PET_SELECTOR)
-    expect(pets.length).toBe(1) // only the switchable kitten lives in the troop
+    expect(pets.length).toBeGreaterThanOrEqual(1) // 1–4 random kittens
     expect(document.body.querySelector('[class*="pixelPetWhale"]')).toBeNull()
     expect(document.body.querySelector('[class*="pixelPetMouse"]')).toBeNull()
     expect(document.body.querySelector('[class*="pixelPetKitten"]')).not.toBeNull()
@@ -64,15 +64,34 @@ describe('DSKIN skin apply', () => {
     paw?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     expect((palette as HTMLElement).hidden).toBe(false)
 
-    const before = kitten?.querySelector('svg')?.outerHTML
-    const items = palette?.querySelectorAll('button') ?? []
+    // 4 breed items + count stepper (2 buttons) + hint
+    const items = palette?.querySelectorAll('[class*="pixelPaletteItem"]') ?? []
     expect(items.length).toBe(4)
+    expect(palette?.querySelectorAll('[class*="pixelCountBtn"]').length).toBe(2)
+
+    const before = kitten?.querySelector('svg')?.outerHTML
     items[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    // palette closes and the kitten sprite swapped
-    expect((palette as HTMLElement).hidden).toBe(true)
     const after = kitten?.querySelector('svg')?.outerHTML
     expect(after).not.toBe(before)
-    expect(localStorage.getItem('dskin-kitten')).toBeTruthy()
+    expect(localStorage.getItem('dskin-cats')).toBeTruthy()
+  })
+
+  it('count stepper adds and removes kittens', async () => {
+    fiber = await mount()
+    const paw = document.body.querySelector('[class*="pixelPaw"]')
+    const palette = document.body.querySelector('[class*="pixelPalette"]')
+    paw?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    const before = document.body.querySelectorAll(PET_SELECTOR).length
+    const plus = palette?.querySelectorAll('[class*="pixelCountBtn"]')[1]
+    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    const after = document.body.querySelectorAll(PET_SELECTOR).length
+    expect(after).toBeGreaterThan(before)
+    const minus = palette?.querySelectorAll('[class*="pixelCountBtn"]')[0]
+    minus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(after - 1)
+    await fiber.dispose()
+    fiber = undefined
   })
 
   it('pets react to click without breaking', async () => {
@@ -81,10 +100,27 @@ describe('DSKIN skin apply', () => {
     const pet = document.body.querySelector(PET_SELECTOR)
     expect(pet).not.toBeNull()
     pet?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(1)
+    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBeGreaterThanOrEqual(1)
     await fiber.dispose()
     fiber = undefined
     expect(document.body.querySelector('[class*="pixelPet"]')).toBeNull()
+  })
+
+  it('kittens can be dragged and land back in their zone', async () => {
+    fiber = await mount()
+    const pet = document.body.querySelector(PET_SELECTOR) as HTMLElement
+    expect(pet).not.toBeNull()
+
+    const before = pet.style.left
+    pet.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 100, clientY: 500 }))
+    pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 420, clientY: 260 }))
+    pet.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    // released: not in drag state anymore, and the cat moved with the pointer
+    expect(pet.dataset.petState).not.toBe('drag')
+    const after = pet.style.left
+    expect(after).not.toBe(before)
+    await fiber.dispose()
+    fiber = undefined
   })
 
   it('retracts everything on fiber dispose', async () => {
