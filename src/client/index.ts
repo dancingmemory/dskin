@@ -13,6 +13,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import css from './dskin.module.css'
 import { DSKIN_VERSION } from './version.ts'
+import { QUOTES } from './quotes.ts'
 import {
   KIT_BIGORANGE_BLINK,
   KIT_BIGORANGE_FACE,
@@ -62,6 +63,22 @@ const PLAY_LOCAL_MS = 9000
 /** How long the selection star stays visible before auto-clearing. */
 const SELECT_MS = 10000
 
+/** How long a thought bubble stays on screen. */
+const QUOTE_SHOW_MS = 8000
+
+/** Thought frequency: a random delay between these bounds, mean ≈ 30 min. */
+export const DSKIN_THOUGHT_MIN_MS = 20 * 60 * 1000
+export const DSKIN_THOUGHT_MAX_MS = 40 * 60 * 1000
+
+let thoughtMin = DSKIN_THOUGHT_MIN_MS
+let thoughtMax = DSKIN_THOUGHT_MAX_MS
+
+/** Test hook: narrow the thought interval so tests don't wait 30 minutes. */
+export function setThoughtDelay(minMs: number, maxMs: number): void {
+  thoughtMin = minMs
+  thoughtMax = maxMs
+}
+
 /** Distance in px at which two cats trigger an interaction. */
 const INTERACT_DIST = 60
 
@@ -82,6 +99,14 @@ const HEART_INTERVAL = 1400
 
 /** Drag the cat this close to the top edge and it latches (hangs). */
 const HANG_Y = 2
+
+/**
+ * Where the hanging cat's element is pinned (px from the top). The sprite is
+ * rotated 180° about `center 4px`, which shifts it ~23px ABOVE its box — pin
+ * it 24px down so the upside-down cat is fully visible and never clipped by
+ * the top edge of the viewport.
+ */
+const HANG_PIN_Y = 24
 
 /** Pull distance (px) below the latch line to un-hang back into a drag. */
 const UNHANG_DRAG = 40
@@ -459,7 +484,7 @@ class PixelPet {
     }
 
     this.x = nextX
-    this.y = this.hanging ? HANG_Y : nextY
+    this.y = this.hanging ? HANG_PIN_Y : nextY
     this.el.style.left = `${Math.round(this.x)}px`
     this.el.style.top = `${Math.round(this.y)}px`
   }
@@ -667,6 +692,29 @@ class PixelPet {
     setTimeout(() => bubble.remove(), 900)
   }
 
+  /**
+   * Show a thought bubble with a piece of wisdom. The cat wears a thinking
+   * expression (💭 + eyes closed) for the duration, then returns to normal.
+   */
+  showQuote(text: string): void {
+    const quote = document.createElement('div')
+    quote.className = cls('pixelPetQuote')
+    quote.textContent = text
+    this.el.append(quote)
+    this.el.dataset.petThinking = '1'
+    if (this.state === 'idle') {
+      this.sprite.innerHTML = this.spec.frames.blink
+    }
+    this.thoughtTimer = window.setTimeout(() => {
+      quote.remove()
+      delete this.el.dataset.petThinking
+      if (this.state === 'idle') {
+        this.sprite.innerHTML = this.spec.frames.idle
+        this.nextBlinkAt = performance.now() + rand(1800, 5000)
+      }
+    }, QUOTE_SHOW_MS)
+  }
+
   private readonly onHover = (): void => {
     this.el.dataset.petHover = '1'
   }
@@ -683,6 +731,7 @@ class PixelPet {
 
   dispose(): void {
     cancelAnimationFrame(this.raf)
+    window.clearTimeout(this.thoughtTimer)
     this.el.removeEventListener('pointerenter', this.onHover)
     this.el.removeEventListener('pointerleave', this.onLeave)
     this.el.removeEventListener('pointerdown', this.onPointerDown)
@@ -732,6 +781,7 @@ class CatManager {
   private selectTimer = 0
   private interactRaf = 0
   private lastInteractCheck = 0
+  private thoughtTimer = 0
 
   constructor(initial: CatState) {
     for (let i = 0; i < initial.count; i++) {
@@ -760,6 +810,24 @@ class CatManager {
   start(): void {
     if (this.cats.length > 0) this.select(this.cats[0])
     this.interactRaf = requestAnimationFrame(this.checkInteractions)
+    this.scheduleThought()
+  }
+
+  /** Occasionally (mean ≈ 30 min) a random cat shares a piece of wisdom. */
+  private scheduleThought(): void {
+    this.thoughtTimer = window.setTimeout(
+      () => this.showThought(),
+      rand(thoughtMin, thoughtMax),
+    )
+  }
+
+  private showThought(): void {
+    const candidates = this.cats.filter((c) => !c.isDragging() && !c.isHanging())
+    if (candidates.length > 0) {
+      const cat = candidates[Math.floor(rand(0, candidates.length))]
+      cat.showQuote(QUOTES[Math.floor(rand(0, QUOTES.length))] ?? '喵。')
+    }
+    this.scheduleThought()
   }
 
   /** Select a cat: it becomes the target of the type switcher. The star
@@ -855,6 +923,7 @@ class CatManager {
 
   dispose(): void {
     window.clearTimeout(this.selectTimer)
+    window.clearTimeout(this.thoughtTimer)
     cancelAnimationFrame(this.interactRaf)
     for (const cat of this.cats) cat.dispose()
   }

@@ -9,7 +9,8 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context, type Fiber } from '@deepseek-ai/cordis'
-import { apply, compareVersions } from '../src/client/index.ts'
+import { DSKIN_THOUGHT_MAX_MS, DSKIN_THOUGHT_MIN_MS, apply, compareVersions, setThoughtDelay } from '../src/client/index.ts'
+import { QUOTES } from '../src/client/quotes.ts'
 
 let fiber: Fiber | undefined
 
@@ -40,6 +41,37 @@ describe('DSKIN updater', () => {
     expect(compareVersions('1.1.0', '1.0.99')).toBe(1)
     expect(compareVersions('2.0.0', '1.9.9')).toBe(1)
   })
+})
+
+describe('DSKIN wisdom pool', () => {
+  it('has at least 1000 unique quotes', () => {
+    expect(QUOTES.length).toBeGreaterThanOrEqual(1000)
+    expect(new Set(QUOTES).size).toBe(QUOTES.length)
+    // every quote is short enough to fit a bubble
+    for (const q of QUOTES) {
+      expect(q.length).toBeLessThanOrEqual(40)
+      expect(q.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('kittens occasionally share a thought (~30 min average)', async () => {
+    setThoughtDelay(10, 30)
+    fiber = await mount()
+    try {
+      // no thought yet
+      expect(document.querySelector('[class*="pixelPetQuote"]')).toBeNull()
+      // wait past the (test-shortened) interval → a thought appears
+      await new Promise((r) => setTimeout(r, 200))
+      const quote = document.querySelector('[class*="pixelPetQuote"]')
+      expect(quote).not.toBeNull()
+      expect((quote as HTMLElement).textContent?.length).toBeGreaterThan(0)
+      expect(document.querySelector('[class*="pixelPet"][data-pet-thinking="1"]')).not.toBeNull()
+    } finally {
+      await fiber.dispose()
+      fiber = undefined
+      setThoughtDelay(DSKIN_THOUGHT_MIN_MS, DSKIN_THOUGHT_MAX_MS)
+    }
+  }, 15000)
 })
 
 describe('DSKIN skin apply', () => {

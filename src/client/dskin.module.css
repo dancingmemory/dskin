@@ -156,6 +156,71 @@
   animation: bubble-pop 0.9s steps(5, end) forwards;
 }
 
+/* occasional wisdom: speech bubble with a tail + thinking expression */
+.pixelPetQuote {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483003;
+  max-width: 190px;
+  padding: 7px 11px;
+  background: #ffffff;
+  border: 2px solid #2e3a59;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #2e3a59;
+  text-align: center;
+  box-shadow: 2px 2px 0 rgba(46, 58, 89, 0.25);
+  pointer-events: none;
+  animation: quote-pop 0.35s steps(4, end);
+}
+
+.pixelPetQuote::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #2e3a59;
+}
+
+.pixelPetQuote::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #ffffff;
+  z-index: 1;
+}
+
+@keyframes quote-pop {
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.85); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.pixelPet[data-pet-thinking='1']::after {
+  content: '💭';
+  position: absolute;
+  top: -12px;
+  right: -4px;
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: none;
+  animation: thinking-float 1.2s steps(4, end) infinite;
+}
+
+@keyframes thinking-float {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(-4px); opacity: 0.7; }
+}
+
 @keyframes bubble-pop {
   0% { opacity: 0; transform: translate(-50%, 4px) scale(0.5); }
   20% { opacity: 1; transform: translate(-50%, -2px) scale(1); }
