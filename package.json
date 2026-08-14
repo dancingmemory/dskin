@@ -1,7 +1,7 @@
 {
   "name": "dskin",
-  "description": "DSKIN - the cartoon pixel skin plugin for the DeepSeek Harness (DSH) web GUI: bright cartoon sky, pixel clouds, hard-shadow game panels, Press Start 2P chrome, a pixel whale and a pixel mouse mascot",
-  "version": "0.1.0",
+  "description": "DSKIN - a light cartoon pixel skin for the DeepSeek Harness (DSH) web GUI: an animated pixel mouse pet that walks, blinks and hops, a soft sky backdrop, pixel favicon. Original UI untouched.",
+  "version": "0.2.0",
   "keywords": [
     "dsh-plugin",
     "deepseek-harness",

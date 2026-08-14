@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * apply() owns the whole pixel surface and retracts it on fiber dispose: the
- * body attribute the stylesheet is scoped on, the chrome bars, the injected
+ * body attribute the stylesheet is scoped on, the pet node, the injected
  * favicon, and the document title. Assert the writes and the teardown both
  * ways — including that a session title projected over the skin title is
  * never clobbered by skin teardown.
@@ -28,22 +28,29 @@ afterEach(async () => {
 })
 
 describe('DSKIN skin apply', () => {
-  it('mounts the pixel surface: attribute, chrome bars, title, favicon', async () => {
+  it('mounts the pixel surface: attribute, pet, favicon, title', async () => {
     document.title = 'DeepSeek Harness'
     fiber = await mount()
 
     expect(document.body.dataset.dshDskin).toBe('')
-    const titlebar = document.body.querySelector('[class*="dskinTitlebar"]')
-    const statusbar = document.body.querySelector('[class*="dskinStatusbar"]')
-    expect(titlebar).not.toBeNull()
-    expect(statusbar).not.toBeNull()
-    expect(titlebar?.textContent).toContain('DSKIN · DeepSeek Harness')
-    expect(statusbar?.textContent).toContain('DSKIN')
-    expect(statusbar?.textContent).toContain('PLAYER 1')
-    expect(statusbar?.textContent).toContain('♥')
-    expect(statusbar?.querySelector('svg')).not.toBeNull()
+    const pet = document.body.querySelector('[class*="pixelPet"]')
+    expect(pet).not.toBeNull()
+    expect(pet?.querySelector('svg')).not.toBeNull()
     expect(document.title).toBe('DSKIN · DeepSeek Harness')
     expect(document.head.querySelector('link[rel="icon"]')).not.toBeNull()
+  })
+
+  it('pet reacts to click without breaking', async () => {
+    document.title = 'DeepSeek Harness'
+    fiber = await mount()
+    const pet = document.body.querySelector('[class*="pixelPet"]')
+    expect(pet).not.toBeNull()
+    pet?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(document.body.querySelector('[class*="pixelPet"]')).not.toBeNull()
+    // dispose cancels the rAF loop and drops the node
+    await fiber.dispose()
+    fiber = undefined
+    expect(document.body.querySelector('[class*="pixelPet"]')).toBeNull()
   })
 
   it('retracts everything on fiber dispose', async () => {
@@ -53,8 +60,7 @@ describe('DSKIN skin apply', () => {
     fiber = undefined
 
     expect(document.body.dataset.dshDskin).toBeUndefined()
-    expect(document.body.querySelector('[class*="dskinTitlebar"]')).toBeNull()
-    expect(document.body.querySelector('[class*="dskinStatusbar"]')).toBeNull()
+    expect(document.body.querySelector('[class*="pixelPet"]')).toBeNull()
     expect(document.head.querySelector('link[rel="icon"]')).toBeNull()
     expect(document.title).toBe('DeepSeek Harness')
   })

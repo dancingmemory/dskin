@@ -1,10 +1,10 @@
 # DSKIN 🎮
 
-**DeepSeek Harness 专用卡通像素皮肤插件** — 一键把 DSH Web 变成像素游戏机。
+**DeepSeek Harness（DSH）专用卡通像素皮肤插件** — 原始 UI 一律不动，
+只做轻量像素点缀 + 一只会动的**像素宠物**。
 
-晴天娃娃蓝天空、像素云朵、厚描边硬阴影游戏面板、Press Start 2P 像素字体、
-蓝色标题栏上的像素鲸，以及底部状态栏里喷火的卡通像素鼠吉祥物。
-暗色主题是缀满像素星星的夜空。
+宠物是一只黄色卡通电击鼠：会在屏幕底部来回散步、踏步、眨眼、
+碰到边缘自动转身，鼠标悬停它会蹦跶，**点击它还会跳起来**。
 
 > 纯皮肤插件：只改外观，不注入服务、不发事件、不触碰模型请求，
 > 遵循官方 `dsh.client` 客户端插件契约，可热插拔、可卸载（卸载后完整还原）。
@@ -15,22 +15,19 @@
 | --- | --- |
 | ![light](preview/light.png) | ![dark](preview/dark.png) |
 
-> 预览为像素风示意图，实际效果以浏览器渲染为准。
+> 预览为示意图，实际效果以浏览器渲染为准。
 
-## 功能
+## 它做了什么（克制版）
 
-- 🐳 **像素鲸标题栏**：经典 DeepSeek 鲸鱼 + `DSKIN · DeepSeek Harness` 像素标题
-- 🐭 **卡通像素鼠状态栏**：底部游戏 HUD，黄色电击鼠吉祥物 + `DSKIN / PLAYER 1 / PIXEL MODE ON / ♥♥♥`
-- ☀️ **卡通天空背景**：太阳 + 像素云朵（暗色：星空 + 像素星星）
-- 🕹️ **硬阴影游戏面板**：3px 墨线描边、6px 无模糊硬阴影、直角窗口
-- 🔤 **Press Start 2P 像素字体**：内嵌 data-URI webfont（OFL 协议），无需联网加载
-- 🧩 **完整 token 重映射**：`--dsw-static-*` / `--dsw-alias-*` / `--dsw-specific-*` 全部换成卡通糖果色
-- 🎨 按钮/输入框/滚动条/对话框/菜单/代码块全部像素化，focus 焦点环为像素黄
-- 🌙 亮/暗双主题，跟随 DSH 系统主题；尊重 `prefers-reduced-motion`
+- 🐭 **会动的像素宠物**：底部散步/踏步/眨眼/转身/悬停蹦跶/点击起跳
+- ☀️ **轻柔天空背景**：浅蓝云朵（暗色：星空），只在应用窗口边缘露出
+- 🖼️ **细像素窗框**：应用窗口加 2px 像素描边 + 轻硬阴影
+- 🐭 **像素 favicon**：宠物头像；标题为 `DSKIN · DeepSeek Harness`
+- ✅ **原始 UI 完全保留**：字体、按钮、输入框、滚动条、布局全部原生
 
 ## 安装
 
-要求：DeepSeek Harness `dsh` CLI（已安装或通过 `npx @deepseek-ai/dsh` 运行）。
+要求：DeepSeek Harness `dsh` CLI（或通过 `npx @deepseek-ai/dsh` 运行）。
 
 ### 方式一：GitHub 安装（推荐）
 
@@ -54,7 +51,7 @@ dsh plugin --profile web add .
 
 ```sh
 pnpm pack
-dsh plugin --profile web add ./dskin-0.1.0.tgz
+dsh plugin --profile web add ./dskin-0.2.0.tgz
 ```
 
 ## 使用
@@ -65,11 +62,10 @@ dsh plugin --profile web add ./dskin-0.1.0.tgz
 dsh web
 ```
 
-2. 打开 `http://127.0.0.1:3080`，皮肤自动生效——顶部出现像素标题栏，
-   底部出现卡通像素鼠状态栏。
-3. 想换回原版皮肤：`dsh plugin --profile web remove dskin`，重启即还原。
+2. 打开 `http://127.0.0.1:3080` —— 左下角出现像素宠物，开始散步。
+3. 想换回原版：`dsh plugin --profile web remove dskin`，重启即还原。
 
-> 注意：亮/暗主题跟随 DSH 的「外观」设置切换。
+> 亮/暗主题跟随 DSH 的「外观」设置切换。
 
 ## 开发
 
@@ -90,20 +86,20 @@ pnpm test           # vitest：apply/dispose 契约测试
 ├── src/
 │   ├── index.ts          # host 侧入口（无操作）
 │   └── client/
-│       ├── index.ts      # apply(ctx)：皮肤装配与收回应约
-│       ├── mascots.ts    # 像素鲸 / 像素鼠内联 SVG（生成自 scripts/gen-mascots.mjs）
-│       └── dskin.module.css  # 全部样式，作用域于 body[data-dsh-dskin]
+│       ├── index.ts      # apply(ctx) + PixelPet 状态机（idle/blink/walk/jump）
+│       ├── mascots.ts    # 宠物 4 帧像素 SVG（生成自 scripts/gen-mascots.mjs）
+│       └── dskin.module.css  # 样式，作用域于 body[data-dsh-dskin]
 ├── tests/apply.spec.ts   # apply/dispose 契约测试
-└── scripts/              # 吉祥物与预览图生成器
+└── scripts/              # 宠物帧与预览图生成器
 ```
 
 ### 皮肤契约（官方标准）
 
 - 纯呈现层：不注入服务、不发 cordis 事件、不触碰模型请求
 - 所有样式作用域在 `body[data-dsh-dskin]`（暗色 `body[data-dsh-dskin][data-ds-dark-theme]`）
-- `apply(ctx)` 写什么就在 `ctx.effect` disposer 里收回什么：body 属性、chrome DOM、favicon、标题
+- `apply(ctx)` 写什么就在 `ctx.effect` disposer 里收回什么：body 属性、宠物 DOM、favicon、标题
 - CSS Modules 由 bundle 自动注入 `<style data-plugin-css>`，卸载时由加载器移除
-- 不携带静态资源：字体 data-URI、吉祥物内联 SVG
+- 不携带静态资源：宠物为内联 SVG
 
 ## 在 dsh 插件区索引到 DSKIN
 
@@ -119,4 +115,4 @@ pnpm test           # vitest：apply/dispose 契约测试
 
 ## 许可
 
-MIT License — 见 [LICENSE](LICENSE)。内嵌字体 Press Start 2P 遵循 SIL Open Font License 1.1。
+MIT License — 见 [LICENSE](LICENSE)。
