@@ -2,10 +2,10 @@
 """Regenerate the DSKIN star-trend chart (assets/star-trend.svg).
 
 Fetches the stargazers timeline from the GitHub API (paginated) using
-GH_TOKEN (the Actions default token in CI, or any repo-admin token locally),
-then renders a clean SVG step chart. When the API is unreachable it falls
-back to a "waiting for the first star" placeholder so the README never shows
-a broken image. Runs daily via .github/workflows/star-chart.yml."""
+GH_TOKEN, then renders a clean, ordinary line chart with a small pixel cat
+accent. Runs daily via .github/workflows/star-chart.yml; never overwrites
+the chart on failure."""
+import datetime
 import json
 import os
 import sys
@@ -16,6 +16,8 @@ OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 TOKEN = os.environ.get("GH_TOKEN", "")
 
 W, H = 900, 440
+INK = "#2e3a59"
+ACCENT = "#ff9f1c"
 
 
 def fetch_stargazers():
@@ -43,108 +45,101 @@ def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def ts(s):
+    return datetime.datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
+
+
+def fmt_date(s):
+    d = datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    return d.strftime("%Y-%m-%d")
+
+
+def pixel_cat(s=2):
+    """Small pixel cat as SVG rects (used as a decorative accent)."""
+    CAT = [
+        '...KK........KK....', '..KFFK......KFFK...', '.KFFAK....KAAFK....',
+        '.KFAKKK..KKKAFK....', 'KKKKKKKKKKKKKKKKKK.', 'KFFFFFFFFFFFFFFFFK.',
+        'KFFFFFFFFFFFFFFFFK.', 'KFEwFFFFFFFwEFFFK..', 'KFFFFFFFFFFFFFFFFK.',
+        'WFFMMMNNNMMMFFFW...', 'WFFMFMKKKMFMFFFW...', 'KFFFFMMFFMMFFFFK...',
+        'KKKFFFFFFFFFFFFKK..', '.KKKKKKKKKKKKKKKK..', '......KK....KK......',
+    ]
+    PAL = {'K': '#4a3323', 'F': '#f5a35c', 'E': '#3d2b1f', 'w': '#ffffff',
+           'A': '#ffb39a', 'N': '#ff8a80', 'M': '#fff1de', 'W': '#fff1de', 'B': '#fff1de'}
+    out = []
+    for i, row in enumerate(CAT):
+        for j, ch in enumerate(row):
+            if ch in PAL:
+                out.append(f'<rect x="{j*s}" y="{i*s}" width="{s}" height="{s}" fill="{PAL[ch]}"/>')
+    return "".join(out)
+
+
 def render_step_chart(stars):
     n = len(stars)
-    # panel geometry
-    px, py, pw, ph = 60, 74, 620, 268
-    ax0, ay0 = px + 56, py + ph - 56
-    chart_w = pw - 80
-    chart_h = ay0 - (py + 20)
-    if n < 2:
-        points = [(0, 1)]  # a single dot at star #1
-        xspan = 1
-    else:
-        first = stars[0]
-        last = stars[-1]
-        import datetime
-        def ts(s):
-            return datetime.datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
-        xspan = ts(last) - ts(first)
-        points = []
-        prev_t = None
-        for i, s in enumerate(stars, start=1):
-            t = ts(s)
-            if t == prev_t:
-                continue
-            prev_t = t
-            points.append((0 if xspan == 0 else (t - ts(first)) / xspan, i))
-    max_y = max(p for _, p in points)
+    # chart geometry
+    ml, mr, mt, mb = 90, 60, 60, 70
+    cw, ch = W - ml - mr, H - mt - mb
+    ax0, ay0 = ml, mt + ch
+    tmin, tmax = ts(stars[0]), ts(stars[-1])
+    xspan = max(tmax - tmin, 1)
 
-    def X(t): return ax0 + t * chart_w
-    def Y(v): return ay0 - (v / max(1, max_y)) * chart_h
+    def X(t): return ax0 + (t - tmin) / xspan * cw
+    def Y(v): return ay0 - v / max(n, 1) * (ch - 10)
+
+    # unique points (one star may have repeated timestamps)
+    pts = []
+    seen = set()
+    for i, s in enumerate(stars, start=1):
+        if s not in seen:
+            seen.add(s)
+            pts.append((ts(s), i))
+    max_y = max(v for _, v in pts)
 
     out = []
-    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="PingFang SC, Hiragino Sans GB, sans-serif">')
-    # sky background
-    out.append('<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">'
-               '<stop offset="0" stop-color="#a8d4f2"/><stop offset="1" stop-color="#eef6fc"/></linearGradient></defs>')
-    out.append(f'<rect width="{W}" height="{H}" fill="url(#sky)"/>')
-    # panel
-    out.append(f'<rect x="{px+6}" y="{py+6}" width="{pw}" height="{ph}" fill="#4a3323"/>')
-    out.append(f'<rect x="{px}" y="{py}" width="{pw}" height="{ph}" fill="#fffdf7" stroke="#2e3a59" stroke-width="3"/>')
+    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="-apple-system, BlinkMacSystemFont, PingFang SC, Hiragino Sans GB, sans-serif">')
+    out.append(f'<rect width="{W}" height="{H}" fill="#ffffff"/>')
+
+    # title: small pixel cat + text
+    out.append(f'<g transform="translate(24, 24)">{pixel_cat(3)}</g>')
+    out.append(f'<text x="92" y="44" font-size="22" font-weight="700" fill="{INK}">DSKIN · Star History</text>')
+    out.append(f'<text x="92" y="64" font-size="13" fill="#7a869e">星标趋势 · 每日自动更新 · {n} stars</text>')
+
     # gridlines + y ticks
-    for g in (0.33, 0.66):
-        gy = py + 20 + (ay0 - py - 20) * g
-        out.append(f'<line x1="{ax0}" y1="{gy}" x2="{px+pw-24}" y2="{gy}" stroke="#dde1ec" stroke-width="2"/>')
+    ticks = 4
+    for i in range(ticks + 1):
+        v = max_y * i / ticks
+        y = Y(v)
+        out.append(f'<line x1="{ax0}" y1="{y:.1f}" x2="{ax0+cw}" y2="{y:.1f}" stroke="#eceff5" stroke-width="1"/>')
+        out.append(f'<text x="{ax0-10}" y="{y+4:.1f}" font-size="12" fill="#9aa3b5" text-anchor="end">{v:g}</text>')
+
     # axes
-    out.append(f'<line x1="{ax0}" y1="{py+20}" x2="{ax0}" y2="{ay0}" stroke="#2e3a59" stroke-width="3"/>')
-    out.append(f'<line x1="{ax0}" y1="{ay0}" x2="{px+pw-24}" y2="{ay0}" stroke="#2e3a59" stroke-width="3"/>')
-    # axis labels
-    out.append(f'<text x="{ax0+6}" y="{py+40}" font-size="16" fill="#2e3a59">stars</text>')
-    out.append(f'<text x="{ax0-70}" y="{ay0+22}" font-size="16" fill="#2e3a59">0</text>')
-    out.append(f'<text x="{px+pw-140}" y="{ay0+22}" font-size="16" fill="#2e3a59">time →</text>')
-    # step line
-    path = []
-    prev = None
-    for (t, v) in points:
-        x, y = round(X(t), 1), round(Y(v), 1)
-        if prev is None:
-            path.append(f"M{x} {y}")
-        else:
-            px0, py0 = prev
-            path.append(f"H{px0} V{y} H{x}")
-        prev = (x, y)
-    if path:
-        out.append(f'<path d="{" ".join(path)}" fill="none" stroke="#f5a35c" stroke-width="4" stroke-linejoin="round"/>')
-    # star dots
-    for (t, v) in points:
-        x, y = X(t), Y(v)
-        out.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>')
+    out.append(f'<line x1="{ax0}" y1="{ay0}" x2="{ax0+cw}" y2="{ay0}" stroke="#d5dae4" stroke-width="1.5"/>')
+    out.append(f'<line x1="{ax0}" y1="{mt}" x2="{ax0}" y2="{ay0}" stroke="#d5dae4" stroke-width="1.5"/>')
+    # x labels: first & last star dates
+    out.append(f'<text x="{ax0}" y="{ay0+22}" font-size="12" fill="#9aa3b5" text-anchor="middle">{fmt_date(stars[0])}</text>')
+    if xspan > 1:
+        out.append(f'<text x="{ax0+cw}" y="{ay0+22}" font-size="12" fill="#9aa3b5" text-anchor="middle">{fmt_date(stars[-1])}</text>')
+
+    # area + line
+    if len(pts) >= 2:
+        poly = " ".join(f"{X(t):.1f},{Y(v):.1f}" for t, v in pts)
+        out.append(f'<polygon points="{ax0},{ay0} {poly} {X(pts[-1][0]):.1f},{ay0}" fill="url(#area)" stroke="none"/>')
+    path = " ".join(
+        f"{'M' if i == 0 else 'L'}{X(t):.1f} {Y(v):.1f}" for i, (t, v) in enumerate(pts)
+    )
+    out.append(f'<defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1">'
+               f'<stop offset="0" stop-color="{ACCENT}" stop-opacity="0.25"/>'
+               f'<stop offset="1" stop-color="{ACCENT}" stop-opacity="0"/></linearGradient></defs>')
+    out.append(f'<path d="{path}" fill="none" stroke="{ACCENT}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>')
+    # dots
+    for t, v in pts:
+        out.append(f'<circle cx="{X(t):.1f}" cy="{Y(v):.1f}" r="4" fill="{ACCENT}" stroke="#ffffff" stroke-width="1.5"/>')
     # last value label
-    if points:
-        x, y = X(points[-1][0]), Y(points[-1][1])
-        out.append(f'<text x="{min(x+10, px+pw-120)}" y="{max(y-10, py+30)}" font-size="15" font-weight="bold" fill="#b06e00">{max_y} ⭐</text>')
-    # title (drawn stars via text-safe ⭐ fallback: use small circles)
-    for i, sx in enumerate((34, 46, 58)):
-        out.append(f'<circle cx="{sx}" cy="28" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="1.5"/>')
-    out.append(f'<text x="76" y="36" font-size="24" font-weight="bold" fill="#2e3a59">DSKIN Star 趋势图</text>')
-    out.append(f'<text x="76" y="58" font-size="14" fill="#6e7a92">star history · 自动更新 / auto-updates daily</text>')
+    lt, lv = pts[-1]
+    out.append(f'<rect x="{X(lt)+8:.1f}" y="{Y(lv)-22:.1f}" width="34" height="22" rx="4" fill="{INK}"/>')
+    out.append(f'<text x="{X(lt)+25:.1f}" y="{Y(lv)-6:.1f}" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">{lv}</text>')
+
     # caption
-    out.append(f'<text x="{px+8}" y="{py+ph+32}" font-size="15" fill="#4a4a4a">共 {n} 颗星 · 图表由 GitHub Actions 每日自动重绘</text>')
-    out.append('</svg>')
-    return "\n".join(out)
-
-
-def render_placeholder():
-    out = []
-    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="PingFang SC, Hiragino Sans GB, sans-serif">')
-    out.append('<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">'
-               '<stop offset="0" stop-color="#a8d4f2"/><stop offset="1" stop-color="#eef6fc"/></linearGradient></defs>')
-    out.append(f'<rect width="{W}" height="{H}" fill="url(#sky)"/>')
-    out.append(f'<rect x="66" y="80" width="620" height="268" fill="#fffdf7" stroke="#2e3a59" stroke-width="3"/>')
-    out.append(f'<line x1="116" y1="100" x2="116" y2="292" stroke="#2e3a59" stroke-width="3"/>')
-    out.append(f'<line x1="116" y1="292" x2="656" y2="292" stroke="#2e3a59" stroke-width="3"/>')
-    out.append(f'<text x="122" y="120" font-size="16" fill="#2e3a59">stars</text>')
-    out.append(f'<text x="46" y="314" font-size="16" fill="#2e3a59">0</text>')
-    out.append(f'<text x="520" y="314" font-size="16" fill="#2e3a59">time →</text>')
-    dash = " ".join("12 10" for _ in range(20))
-    out.append(f'<line x1="116" y1="270" x2="620" y2="270" stroke="#ffb300" stroke-width="4" stroke-dasharray="{dash}"/>')
-    out.append(f'<circle cx="620" cy="270" r="6" fill="#ffb300" stroke="#2e3a59" stroke-width="2"/>')
-    for i, sx in enumerate((34, 46, 58)):
-        out.append(f'<circle cx="{sx}" cy="28" r="5" fill="#ffb300" stroke="#2e3a59" stroke-width="1.5"/>')
-    out.append(f'<text x="76" y="36" font-size="24" font-weight="bold" fill="#2e3a59">DSKIN Star 趋势图</text>')
-    out.append(f'<text x="76" y="58" font-size="14" fill="#6e7a92">waiting for the first star</text>')
-    out.append(f'<text x="68" y="386" font-size="15" fill="#4a4a4a">等第一颗星点亮，这里会自动生成实时曲线（GitHub Actions 每日更新）</text>')
+    out.append(f'<text x="{W/2}" y="{H-16}" font-size="12" fill="#aab2c3" text-anchor="middle">由 GitHub Actions 每日自动更新 · auto-updated daily by GitHub Actions</text>')
     out.append('</svg>')
     return "\n".join(out)
 
