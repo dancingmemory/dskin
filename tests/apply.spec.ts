@@ -9,7 +9,7 @@
  */
 import { afterEach, describe, expect, it } from 'vitest'
 import { Context, type Fiber } from '@deepseek-ai/cordis'
-import { apply } from '../src/client/index.ts'
+import { apply, compareVersions } from '../src/client/index.ts'
 
 let fiber: Fiber | undefined
 
@@ -30,6 +30,17 @@ afterEach(async () => {
 })
 
 const PET_SELECTOR = '[class*="pixelPetKitten"]'
+
+describe('DSKIN updater', () => {
+  it('compares dotted versions', () => {
+    expect(compareVersions('1.0.5', '1.0.5')).toBe(0)
+    expect(compareVersions('1.0.5', '1.0.6')).toBe(-1)
+    expect(compareVersions('1.0.10', '1.0.9')).toBe(1)
+    expect(compareVersions('v1.0.5', '1.0.4')).toBe(1)
+    expect(compareVersions('1.1.0', '1.0.99')).toBe(1)
+    expect(compareVersions('2.0.0', '1.9.9')).toBe(1)
+  })
+})
 
 describe('DSKIN skin apply', () => {
   it('mounts the pixel surface: attribute, pet troop, switcher, favicon, title', async () => {
@@ -81,15 +92,16 @@ describe('DSKIN skin apply', () => {
     const paw = document.body.querySelector('[class*="pixelPaw"]')
     const palette = document.body.querySelector('[class*="pixelPalette"]')
     paw?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    const before = document.body.querySelectorAll(PET_SELECTOR).length
     const plus = palette?.querySelectorAll('[class*="pixelCountBtn"]')[1]
-    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    const after = document.body.querySelectorAll(PET_SELECTOR).length
-    expect(after).toBeGreaterThan(before)
     const minus = palette?.querySelectorAll('[class*="pixelCountBtn"]')[0]
+    // click plus up to 3 times: count caps at 4
+    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    plus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(4)
+    // one minus brings it down
     minus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(after - 1)
+    expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(3)
     await fiber.dispose()
     fiber = undefined
   })

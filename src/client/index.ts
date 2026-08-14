@@ -12,6 +12,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import css from './dskin.module.css'
+import { DSKIN_VERSION } from './version.ts'
 import {
   KIT_BIGORANGE_BLINK,
   KIT_BIGORANGE_FACE,
@@ -78,6 +79,88 @@ const HANG_Y = 2
 
 /** Pull distance (px) below the latch line to un-hang back into a drag. */
 const UNHANG_DRAG = 40
+
+/* ------------------------------------------------------------------ */
+/* built-in updater: checks the GitHub repo for new releases           */
+/* ------------------------------------------------------------------ */
+
+/** GitHub API endpoint returning the latest release tag. */
+const UPDATE_URL = 'https://api.github.com/repos/dancingmemory/dskin/releases/latest'
+
+/** Fallback source: the raw package.json on the default branch. */
+const UPDATE_FALLBACK_URL = 'https://raw.githubusercontent.com/dancingmemory/dskin/main/package.json'
+
+/** How often the checker polls in the background (6 h). */
+const UPDATE_CHECK_INTERVAL = 6 * 60 * 60 * 1000
+
+/** A manual check (panel open) is only re-run when the last one is older. */
+const UPDATE_STALE_MS = 30 * 60 * 1000
+
+/** Compare two dotted version strings ('1.0.5' / 'v1.0.5'). */
+export function compareVersions(a: string, b: string): -1 | 0 | 1 {
+  const pa = String(a).replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0)
+  const pb = String(b).replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0)
+  const len = Math.max(pa.length, pb.length)
+  for (let i = 0; i < len; i++) {
+    const x = pa[i] ?? 0
+    const y = pb[i] ?? 0
+    if (x > y) return 1
+    if (x < y) return -1
+  }
+  return 0
+}
+
+/** Polls the repo for a newer version; stays silent on network errors. */
+class UpdateChecker {
+  latest: string | null = null
+  hasUpdate = false
+  /** Called whenever the state changes (drives the paw badge + panel row). */
+  onChange: (() => void) | null = null
+
+  private nextCheckAt = 0
+  private checking = false
+
+  /** Fetch the latest release version from GitHub (with a package.json fallback). */
+  private async fetchLatest(): Promise<string | null> {
+    try {
+      const res = await fetch(UPDATE_URL, { cache: 'no-store' })
+      if (res.ok) {
+        const data = await res.json() as { tag_name?: unknown }
+        const tag = String(data.tag_name ?? '').trim().replace(/^v/i, '')
+        if (tag) return tag
+      }
+    } catch {
+      // fall through to the raw package.json
+    }
+    try {
+      const res = await fetch(UPDATE_FALLBACK_URL, { cache: 'no-store' })
+      if (!res.ok) return null
+      const pkg = await res.json() as { version?: unknown }
+      const version = String(pkg.version ?? '').trim()
+      return version || null
+    } catch {
+      return null
+    }
+  }
+
+  /** Run a check now unless a fresh one exists (or one is in flight). */
+  async check(force = false): Promise<void> {
+    if (this.checking) return
+    if (!force && Date.now() < this.nextCheckAt) return
+    this.checking = true
+    this.nextCheckAt = Date.now() + UPDATE_STALE_MS
+    try {
+      const latest = await this.fetchLatest()
+      if (latest) {
+        this.latest = latest
+        this.hasUpdate = compareVersions(latest, DSKIN_VERSION) > 0
+        this.onChange?.()
+      }
+    } finally {
+      this.checking = false
+    }
+  }
+}
 
 const cls = (name: keyof typeof css): string => css[name] ?? ''
 
@@ -719,15 +802,20 @@ class CatManager {
   }
 }
 
-/** Pixel paw button + cat panel: pick count, then pick each cat's breed. */
+/** Pixel paw button + cat panel: pick count, pick each cat's breed, updates. */
 class CatPanel {
   private readonly el: HTMLDivElement
   private readonly palette: HTMLDivElement
   private readonly countLabel: HTMLSpanElement
+  private readonly versionLabel: HTMLSpanElement
+  private readonly updateRow: HTMLDivElement
   private open = false
   private readonly onDocClick: (e: MouseEvent) => void
 
-  constructor(private readonly manager: CatManager) {
+  constructor(
+    private readonly manager: CatManager,
+    private readonly updater: UpdateChecker,
+  ) {
     this.el = document.createElement('div')
     this.el.className = cls('pixelPaw')
     this.el.innerHTML = `<span>🐾</span>`
@@ -776,6 +864,28 @@ class CatPanel {
     }
     this.palette.append(breedRow, hint)
 
+    // version + update rows (built once, filled by render())
+    const versionRow = document.createElement('div')
+    versionRow.className = cls('pixelVersionRow')
+    this.versionLabel = document.createElement('span')
+    versionRow.append(this.versionLabel)
+    this.updateRow = document.createElement('div')
+    this.updateRow.className = cls('pixelUpdateRow')
+    this.updateRow.hidden = true
+    const updateBtn = document.createElement('button')
+    updateBtn.type = 'button'
+    updateBtn.className = cls('pixelUpdateBtn')
+    updateBtn.textContent = '✨ 查看新版本并升级'
+    updateBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      window.open('https://github.com/dancingmemory/dskin/releases/latest', '_blank', 'noopener')
+    })
+    const updateHint = document.createElement('span')
+    updateHint.className = cls('pixelHint')
+    updateHint.textContent = '打开后复制安装命令，重启 dsh web 即生效'
+    this.updateRow.append(updateBtn, updateHint)
+    this.palette.append(versionRow, this.updateRow)
+
     this.onDocClick = (e: MouseEvent) => {
       const target = e.target as Node
       // clicking a kitten selects it (and keeps the panel open)
@@ -796,11 +906,29 @@ class CatPanel {
 
   private render(): void {
     this.countLabel.textContent = String(this.manager.getCount())
+    const checker = this.updater
+    if (checker.hasUpdate) {
+      this.versionLabel.textContent = `当前 v${DSKIN_VERSION} · 发现新版本 v${checker.latest}`
+      this.el.dataset.petUpdate = '1'
+      this.updateRow.hidden = false
+    } else if (checker.latest) {
+      this.versionLabel.textContent = `当前 v${DSKIN_VERSION} · 已是最新 (v${checker.latest})`
+      delete this.el.dataset.petUpdate
+      this.updateRow.hidden = true
+    } else {
+      this.versionLabel.textContent = `当前 v${DSKIN_VERSION}`
+      delete this.el.dataset.petUpdate
+      this.updateRow.hidden = true
+    }
   }
 
   private readonly toggle = (): void => {
     if (this.open) this.close()
-    else this.openPalette()
+    else {
+      // refresh the update status whenever the panel opens
+      void this.updater.check(true)
+      this.openPalette()
+    }
   }
 
   private openPalette(): void {
@@ -859,7 +987,13 @@ export function apply(ctx: Context): void {
 
   const manager = new CatManager({ count, types })
   manager.start()
-  const panel = new CatPanel(manager)
+
+  // built-in updater: first check after boot, then periodically
+  const updater = new UpdateChecker()
+  const panel = new CatPanel(manager, updater)
+  updater.onChange = () => panel.render()
+  const initialCheck = window.setTimeout(() => void updater.check(), 10000)
+  const intervalCheck = window.setInterval(() => void updater.check(), UPDATE_CHECK_INTERVAL)
   panel.attach()
 
   const favicon = document.createElement('link')
@@ -871,6 +1005,8 @@ export function apply(ctx: Context): void {
 
   ctx.effect(() => () => {
     delete body.dataset.dshDskin
+    window.clearTimeout(initialCheck)
+    window.clearInterval(intervalCheck)
     manager.dispose()
     panel.dispose()
     favicon.remove()
