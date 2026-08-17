@@ -85,6 +85,22 @@
   opacity: 0.35;
 }
 
+/* napping: the cat curls up (squashed pose) and breathes slowly */
+.pixelPet[data-pet-state='sleep'] .pixelPetSprite {
+  animation: pet-sleep 2.6s steps(6, end) infinite;
+  transform: scaleY(0.72);
+  transform-origin: center bottom;
+}
+
+.pixelPet[data-pet-state='sleep'] .pixelPetShadow {
+  animation: pet-shadow 2.6s steps(6, end) infinite;
+}
+
+@keyframes pet-sleep {
+  0%, 100% { transform: scaleY(0.72); }
+  50% { transform: scaleY(0.76); }
+}
+
 /* click / switch: one hop up and down */
 .pixelPetJump {
   animation: pet-jump 0.5s steps(4, end);
@@ -185,25 +201,27 @@
   animation: bubble-pop 0.9s steps(5, end) forwards;
 }
 
-/* occasional wisdom: speech bubble with a tail + thinking expression */
+/* occasional wisdom: pixel speech bubble with a tail + thinking expression */
 .pixelPetQuote {
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 2147483003;
-  max-width: 190px;
-  padding: 7px 11px;
-  background: #ffffff;
-  border: 2px solid #2e3a59;
-  border-radius: 10px;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 10px;
+  background: #fffdf5;
+  border: 3px solid #2e3a59;
+  border-radius: 0;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.6;
   color: #2e3a59;
   text-align: center;
-  box-shadow: 2px 2px 0 rgba(46, 58, 89, 0.25);
+  white-space: pre-wrap;
+  box-shadow: 3px 3px 0 rgba(46, 58, 89, 0.25);
   pointer-events: none;
-  animation: quote-pop 0.35s steps(4, end);
+  animation: quote-pop 0.3s steps(4, end);
 }
 
 .pixelPetQuote::after {
@@ -225,13 +243,109 @@
   transform: translateX(-50%);
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #ffffff;
+  border-top: 5px solid #fffdf5;
+  z-index: 1;
+}
+
+/* hanging cats are upside down: the bubble flips below the cat and its
+   tail points up towards the head */
+.pixelPet[data-pet-state='hang'] .pixelPetQuote {
+  top: calc(100% + 14px);
+  bottom: auto;
+}
+
+.pixelPet[data-pet-state='hang'] .pixelPetQuote::after {
+  top: -8px;
+  bottom: auto;
+  border-top: none;
+  border-bottom: 8px solid #2e3a59;
+}
+
+.pixelPet[data-pet-state='hang'] .pixelPetQuote::before {
+  top: -5px;
+  bottom: auto;
+  border-top: none;
+  border-bottom: 5px solid #fffdf5;
+}
+
+/* wall-climbing cats are sideways: the bubble sits against the wall,
+   opening towards the cat (and the thinking marker moves to the head) */
+.pixelPet[data-pet-state='climb'][data-pet-climb='-1'] .pixelPetQuote {
+  left: calc(100% + 14px);
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pixelPet[data-pet-state='climb'][data-pet-climb='-1'] .pixelPetQuote::after {
+  left: -8px;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: none;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 8px solid #2e3a59;
+}
+
+.pixelPet[data-pet-state='climb'][data-pet-climb='-1'] .pixelPetQuote::before {
+  left: -5px;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: none;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 5px solid #fffdf5;
+  z-index: 1;
+}
+
+.pixelPet[data-pet-state='climb'][data-pet-climb='1'] .pixelPetQuote {
+  right: calc(100% + 14px);
+  left: auto;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pixelPet[data-pet-state='climb'][data-pet-climb='1'] .pixelPetQuote::after {
+  right: -8px;
+  left: auto;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right: none;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 8px solid #2e3a59;
+}
+
+.pixelPet[data-pet-state='climb'][data-pet-climb='1'] .pixelPetQuote::before {
+  right: -5px;
+  left: auto;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right: none;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid #fffdf5;
   z-index: 1;
 }
 
 @keyframes quote-pop {
   0% { opacity: 0; transform: translate(-50%, 8px) scale(0.85); }
   100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* the climb variants override the translate, so they need their own pop */
+.pixelPet[data-pet-state='climb'] .pixelPetQuote {
+  animation-name: quote-pop-climb;
+}
+
+@keyframes quote-pop-climb {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.85); }
+  100% { opacity: 1; transform: translateY(-50%) scale(1); }
 }
 
 .pixelPet[data-pet-thinking='1']::after {
@@ -249,6 +363,19 @@
 .pixelPet[data-pet-state='hang'][data-pet-thinking='1']::after {
   top: auto;
   bottom: -14px;
+}
+
+/* climbing cats are sideways: the thought marker follows the head (the
+   side that faces up) */
+.pixelPet[data-pet-state='climb'][data-pet-climb='-1'][data-pet-thinking='1']::after {
+  top: auto;
+  bottom: -12px;
+  right: -2px;
+}
+
+.pixelPet[data-pet-state='climb'][data-pet-climb='1'][data-pet-thinking='1']::after {
+  bottom: -12px;
+  right: -2px;
 }
 
 @keyframes thinking-float {
@@ -430,6 +557,35 @@
 .pixelBreedRow {
   display: flex;
   gap: 6px;
+}
+
+.pixelActionRow {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.pixelActionBtn {
+  flex: 1;
+  padding: 4px 6px;
+  border: 2px solid rgba(46, 58, 89, 0.7);
+  border-radius: 0;
+  background: #ffe3b8;
+  color: #2e3a59;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pixelActionBtn[data-muted='1'] {
+  background: #e6e9f2;
+  color: #8b93b8;
+}
+
+.pixelActionBtn:active {
+  transform: translate(1px, 1px);
 }
 
 .pixelHint {

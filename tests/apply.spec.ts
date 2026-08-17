@@ -9,7 +9,8 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context, type Fiber } from '@deepseek-ai/cordis'
-import { DSKIN_THOUGHT_MAX_MS, DSKIN_THOUGHT_MIN_MS, apply, compareVersions, setThoughtDelay } from '../src/client/index.ts'
+import { DSKIN_THOUGHT_MAX_MS, DSKIN_THOUGHT_MIN_MS, apply, compareVersions, setSleepDelay, setThoughtDelay } from '../src/client/index.ts'
+import { isSoundEnabled, setSoundEnabled } from '../src/client/sound.ts'
 import { QUOTES } from '../src/client/quotes.ts'
 
 let fiber: Fiber | undefined
@@ -54,7 +55,7 @@ describe('DSKIN wisdom pool', () => {
     }
   })
 
-  it('kittens occasionally share a thought (~30 min average)', async () => {
+  it('kittens occasionally share a thought (~5 min average)', async () => {
     setThoughtDelay(10, 30)
     fiber = await mount()
     try {
@@ -72,6 +73,64 @@ describe('DSKIN wisdom pool', () => {
       setThoughtDelay(DSKIN_THOUGHT_MIN_MS, DSKIN_THOUGHT_MAX_MS)
     }
   }, 15000)
+
+  it('thought interval averages ~5 minutes', () => {
+    const avg = (DSKIN_THOUGHT_MIN_MS + DSKIN_THOUGHT_MAX_MS) / 2
+    expect(avg).toBeGreaterThan(4 * 60 * 1000)
+    expect(avg).toBeLessThan(6 * 60 * 1000)
+  })
+})
+
+describe('DSKIN kitten naps', () => {
+  it('an idle cat falls asleep and wakes on hover', async () => {
+    setSleepDelay(10, 30)
+    fiber = await mount()
+    try {
+      // jsdom rAF scheduling is slow under the full suite: poll until a cat
+      // curls up (or bail out after 1.5 s)
+      let sleeper: HTMLElement | null = null
+      for (let i = 0; i < 38; i++) {
+        await new Promise((r) => setTimeout(r, 40))
+        sleeper = document.body.querySelector('[class*="pixelPetKitten"][data-pet-sleeping="1"]')
+        if (sleeper) break
+      }
+      expect(sleeper).not.toBeNull()
+      expect((sleeper as HTMLElement).dataset.petState).toBe('sleep')
+      // hover wakes it back to life
+      ;(sleeper as HTMLElement).dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }))
+      expect((sleeper as HTMLElement).dataset.petState).toBe('idle')
+      expect((sleeper as HTMLElement).dataset.petSleeping).toBeUndefined()
+    } finally {
+      await fiber.dispose()
+      fiber = undefined
+      setSleepDelay(45 * 1000, 120 * 1000)
+    }
+  }, 15000)
+})
+
+describe('DSKIN sound', () => {
+  it('meow toggle persists its mute state', () => {
+    setSoundEnabled(false)
+    expect(isSoundEnabled()).toBe(false)
+    expect(localStorage.getItem('dskin-sound')).toBe('0')
+    setSoundEnabled(true)
+    expect(isSoundEnabled()).toBe(true)
+    expect(localStorage.getItem('dskin-sound')).toBe('1')
+  })
+
+  it('mutes through the paw panel button', async () => {
+    fiber = await mount()
+    const paw = document.body.querySelector('[class*="pixelPaw"]')
+    paw?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    const palette = document.body.querySelector('[class*="pixelPalette"]')
+    const btn = palette?.querySelector('[class*="pixelActionBtn"][data-muted]') as HTMLElement | null
+    expect(btn).not.toBeNull()
+    const wasOn = btn?.dataset.muted === '0'
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(btn?.dataset.muted).toBe(wasOn ? '1' : '0')
+    await fiber.dispose()
+    fiber = undefined
+  })
 })
 
 describe('DSKIN skin apply', () => {
@@ -133,6 +192,22 @@ describe('DSKIN skin apply', () => {
     // one minus brings it down
     minus?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     expect(document.body.querySelectorAll(PET_SELECTOR).length).toBe(3)
+    await fiber.dispose()
+    fiber = undefined
+  })
+
+  it('randomize re-dresses every kitten and keeps the count', async () => {
+    fiber = await mount()
+    const before = [...document.body.querySelectorAll(PET_SELECTOR)].map((p) => p.querySelector('svg')?.outerHTML)
+    const paw = document.body.querySelector('[class*="pixelPaw"]')
+    paw?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    const palette = document.body.querySelector('[class*="pixelPalette"]')
+    const dice = [...(palette?.querySelectorAll('[class*="pixelActionBtn"]') ?? [])].find((b) => b.textContent?.includes('🎲'))
+    expect(dice).toBeTruthy()
+    ;(dice as HTMLElement).dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    const after = [...document.body.querySelectorAll(PET_SELECTOR)].map((p) => p.querySelector('svg')?.outerHTML)
+    expect(after.length).toBe(before.length)
+    expect(after.some((svg, i) => svg !== before[i])).toBe(true)
     await fiber.dispose()
     fiber = undefined
   })
