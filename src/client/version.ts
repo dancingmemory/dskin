@@ -3,4 +3,4 @@
  * every release so the built-in updater can compare itself against the
  * GitHub release tags.
  */
-export const DSKIN_VERSION = '1.0.14'
+export const DSKIN_VERSION = '1.0.15'

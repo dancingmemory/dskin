@@ -85,22 +85,6 @@
   opacity: 0.35;
 }
 
-/* napping: the cat curls up (squashed pose) and breathes slowly */
-.pixelPet[data-pet-state='sleep'] .pixelPetSprite {
-  animation: pet-sleep 2.6s steps(6, end) infinite;
-  transform: scaleY(0.72);
-  transform-origin: center bottom;
-}
-
-.pixelPet[data-pet-state='sleep'] .pixelPetShadow {
-  animation: pet-shadow 2.6s steps(6, end) infinite;
-}
-
-@keyframes pet-sleep {
-  0%, 100% { transform: scaleY(0.72); }
-  50% { transform: scaleY(0.76); }
-}
-
 /* click / switch: one hop up and down */
 .pixelPetJump {
   animation: pet-jump 0.5s steps(4, end);

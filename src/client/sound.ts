@@ -140,11 +140,6 @@ export function meowInteract(): void {
   window.setTimeout(() => meow({ from: 560, to: 400, dur: 0.16, gain: 0.35, wobble: 14 }), 150)
 }
 
-/** Woken from a nap: low, slow, sleepy. */
-export function meowWake(): void {
-  meow({ from: 400, to: 250, dur: 0.42, gain: 0.4, wobble: 6 })
-}
-
 /** Dropped into a wall-climb: determined little grunt. */
 export function meowClimb(): void {
   meow({ from: 520, to: 440, dur: 0.18, gain: 0.35, wobble: 10 })

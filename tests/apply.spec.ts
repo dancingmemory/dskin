@@ -9,7 +9,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context, type Fiber } from '@deepseek-ai/cordis'
-import { DSKIN_THOUGHT_MAX_MS, DSKIN_THOUGHT_MIN_MS, apply, compareVersions, setSleepDelay, setThoughtDelay } from '../src/client/index.ts'
+import { DSKIN_THOUGHT_MAX_MS, DSKIN_THOUGHT_MIN_MS, apply, compareVersions, setThoughtDelay } from '../src/client/index.ts'
 import { isSoundEnabled, setSoundEnabled } from '../src/client/sound.ts'
 import { QUOTES } from '../src/client/quotes.ts'
 
@@ -76,36 +76,9 @@ describe('DSKIN wisdom pool', () => {
 
   it('thought interval averages ~5 minutes', () => {
     const avg = (DSKIN_THOUGHT_MIN_MS + DSKIN_THOUGHT_MAX_MS) / 2
-    expect(avg).toBeGreaterThan(4 * 60 * 1000)
-    expect(avg).toBeLessThan(6 * 60 * 1000)
+    expect(avg).toBeGreaterThan(50 * 1000)
+    expect(avg).toBeLessThan(70 * 1000)
   })
-})
-
-describe('DSKIN kitten naps', () => {
-  it('an idle cat falls asleep and wakes on hover', async () => {
-    setSleepDelay(10, 30)
-    fiber = await mount()
-    try {
-      // jsdom rAF scheduling is slow under the full suite: poll until a cat
-      // curls up (or bail out after 1.5 s)
-      let sleeper: HTMLElement | null = null
-      for (let i = 0; i < 38; i++) {
-        await new Promise((r) => setTimeout(r, 40))
-        sleeper = document.body.querySelector('[class*="pixelPetKitten"][data-pet-sleeping="1"]')
-        if (sleeper) break
-      }
-      expect(sleeper).not.toBeNull()
-      expect((sleeper as HTMLElement).dataset.petState).toBe('sleep')
-      // hover wakes it back to life
-      ;(sleeper as HTMLElement).dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }))
-      expect((sleeper as HTMLElement).dataset.petState).toBe('idle')
-      expect((sleeper as HTMLElement).dataset.petSleeping).toBeUndefined()
-    } finally {
-      await fiber.dispose()
-      fiber = undefined
-      setSleepDelay(45 * 1000, 120 * 1000)
-    }
-  }, 15000)
 })
 
 describe('DSKIN sound', () => {

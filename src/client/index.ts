@@ -21,7 +21,6 @@ import {
   meowGreet,
   meowHang,
   meowInteract,
-  meowWake,
   setSoundEnabled,
 } from './sound.ts'
 import {
@@ -77,8 +76,8 @@ const SELECT_MS = 10000
 const QUOTE_SHOW_MS = 8000
 
 /** Thought frequency: a random delay between these bounds, mean ≈ 5 min. */
-export const DSKIN_THOUGHT_MIN_MS = 3 * 60 * 1000
-export const DSKIN_THOUGHT_MAX_MS = 7 * 60 * 1000
+export const DSKIN_THOUGHT_MIN_MS = 30 * 1000
+export const DSKIN_THOUGHT_MAX_MS = 90 * 1000
 
 let thoughtMin = DSKIN_THOUGHT_MIN_MS
 let thoughtMax = DSKIN_THOUGHT_MAX_MS
@@ -137,19 +136,6 @@ export function setClimbChance(chance: number): void {
 
 /** A moving cat stuck in place longer than this gets repaired (watchdog). */
 const STUCK_WATCHDOG_MS = 4000
-
-/** Idle time (ms) before a bottom cat curls up for a nap (random bounds). */
-export const DSKIN_SLEEP_MIN_MS = 45 * 1000
-export const DSKIN_SLEEP_MAX_MS = 120 * 1000
-
-let sleepMin = DSKIN_SLEEP_MIN_MS
-let sleepMax = DSKIN_SLEEP_MAX_MS
-
-/** Test hook: narrow the nap delay so tests don't wait two minutes. */
-export function setSleepDelay(minMs: number, maxMs: number): void {
-  sleepMin = minMs
-  sleepMax = maxMs
-}
 
 /* ------------------------------------------------------------------ */
 /* built-in updater: checks the GitHub repo for new releases           */
@@ -310,7 +296,7 @@ function saveKittenId(id: KittenId): void {
  * sways, its shadow shrinks, and it occasionally cries "!". Click = hop.
  * Cats that meet inside the zone stop to play, then scatter apart.
  */
-type PetState = 'idle' | 'walk' | 'climb' | 'drag' | 'hang' | 'sleep' | 'return'
+type PetState = 'idle' | 'walk' | 'climb' | 'drag' | 'hang' | 'return'
 
 class PixelPet {
   private readonly el: HTMLDivElement
@@ -373,16 +359,12 @@ class PixelPet {
   private nextHeartAt = 0
   /* dragged: occasional "!" bubble */
   private nextBubbleAt = 0
-  /* naps: when an idle cat on the bottom curls up to sleep */
-  private nextSleepAt: number
-  private nextZzzAt = 0
 
   constructor(spec: PetSpec) {
     this.spec = spec
     this.x = spec.startX
     this.nextWalkAt = performance.now() + rand(800, 2200)
     this.nextBlinkAt = performance.now() + rand(600, 1800)
-    this.nextSleepAt = performance.now() + rand(sleepMin, sleepMax)
 
     this.el = document.createElement('div')
     this.el.className = `${cls('pixelPet')} ${cls(`pixelPet${spec.kind[0].toUpperCase()}${spec.kind.slice(1)}`)}`
@@ -424,11 +406,6 @@ class PixelPet {
   /** Swap the sprite frameset (used by the kitten switcher). */
   setFrames(frames: PetFrames): void {
     this.spec.frames = frames
-    if (this.state === 'sleep') {
-      delete this.el.dataset.petSleeping
-      this.setState('idle')
-      this.nextSleepAt = performance.now() + rand(sleepMin, sleepMax)
-    }
     this.sprite.innerHTML = this.state === 'walk' ? frames.walkA : frames.idle
     this.hop()
   }
@@ -454,9 +431,8 @@ class PixelPet {
   startInteraction(now: number, away: 1 | -1): void {
     this.direction = away
     this.flip.dataset.petFlip = String(-away)
-    if (this.state === 'walk' || this.state === 'sleep') {
+    if (this.state === 'walk') {
       this.setState('idle')
-      delete this.el.dataset.petSleeping
       this.sprite.innerHTML = this.spec.frames.idle
     }
     this.interacting = true
@@ -469,7 +445,7 @@ class PixelPet {
 
   /** Whether the cat is mid-wiggle or still in the post-interaction cooldown. */
   isBusy(now: number): boolean {
-    return this.leaveUntil > now || this.state === 'return' || this.state === 'sleep'
+    return this.leaveUntil > now || this.state === 'return'
   }
 
   /** Whether the cat is currently held by the pointer. */
@@ -530,26 +506,11 @@ class PixelPet {
     this.nextWalkAt = performance.now() + rand(500, 1500)
     this.lastPosChangedAt = performance.now()
     this.nextBubbleAt = performance.now() + 1500
-    this.nextSleepAt = performance.now() + rand(sleepMin, sleepMax)
-  }
-
-  /** Wake a napping cat: eyes open, stretch hop, back to idle life. */
-  private wakeUp(): void {
-    if (this.state !== 'sleep') return
-    meowWake()
-    this.setState('idle')
-    delete this.el.dataset.petSleeping
-    this.sprite.innerHTML = this.spec.frames.idle
-    this.nextSleepAt = performance.now() + rand(sleepMin, sleepMax)
-    this.nextWalkAt = performance.now() + rand(1200, 3200)
-    this.hop()
   }
 
   private readonly onPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0) return
-    if (this.state === 'sleep') {
-      this.wakeUp()
-    } else if (this.state !== 'hang') {
+    if (this.state !== 'hang') {
       meowDrag()
     }
     const rect = this.el.getBoundingClientRect()
@@ -686,11 +647,6 @@ class PixelPet {
     return this.state === 'hang'
   }
 
-  /** Whether the cat is napping (won't interrupt it for anything). */
-  isSleeping(): boolean {
-    return this.state === 'sleep'
-  }
-
   private endInteract(): void {
     this.interacting = false
     delete this.el.dataset.petInteract
@@ -738,15 +694,6 @@ class PixelPet {
       if (this.nextBubbleAt < now) {
         this.nextBubbleAt = now + rand(1200, 2400)
         this.popBubble('…')
-      }
-      return
-    }
-
-    if (this.state === 'sleep') {
-      // napping on the bottom edge: eyes closed, occasional Zzz bubble
-      if (this.nextZzzAt < now) {
-        this.nextZzzAt = now + rand(2600, 4600)
-        this.popBubble('Zzz')
       }
       return
     }
@@ -821,15 +768,7 @@ class PixelPet {
         this.beginReturn()
         return
       }
-      // a bottom cat that has been idle long enough curls up for a nap
-      if (now >= this.nextSleepAt) {
-        this.setState('sleep')
-        this.el.dataset.petSleeping = '1'
-        this.sprite.innerHTML = this.spec.frames.blink
-        this.nextZzzAt = now + rand(800, 2000)
-        this.nextHeartAt = now + 600
-        return
-      }
+      // a bottom cat that is idle long enough starts walking again
       if (this.nextWalkAt < now) {
         // bottom-walking: keep the current direction (turns only at edges)
         this.setState('walk')
@@ -922,7 +861,6 @@ class PixelPet {
 
   private readonly onHover = (): void => {
     this.el.dataset.petHover = '1'
-    if (this.state === 'sleep') this.wakeUp()
   }
 
   private readonly onLeave = (): void => {
@@ -932,11 +870,7 @@ class PixelPet {
   private readonly onClick = (): void => {
     // a real click (no dragging) still makes the cat hop — unless it hangs
     if (this.movedDist > DRAG_THRESHOLD || this.state === 'hang') return
-    if (this.state === 'sleep') {
-      this.wakeUp()
-    } else {
-      meowGreet()
-    }
+    meowGreet()
     this.hop()
   }
 
@@ -1033,7 +967,7 @@ class CatManager {
   }
 
   private showThought(): void {
-    const candidates = this.cats.filter((c) => !c.isDragging() && !c.isHanging() && !c.isSleeping())
+    const candidates = this.cats.filter((c) => !c.isDragging() && !c.isHanging())
     if (candidates.length > 0) {
       const cat = candidates[Math.floor(rand(0, candidates.length))]
       cat.showQuote(QUOTES[Math.floor(rand(0, QUOTES.length))] ?? '喵。')
