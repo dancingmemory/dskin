@@ -75,7 +75,7 @@ const SELECT_MS = 10000
 /** How long a thought bubble stays on screen. */
 const QUOTE_SHOW_MS = 8000
 
-/** Thought frequency: a random delay between these bounds, mean ≈ 5 min. */
+/** Thought frequency: a random delay between these bounds, mean ≈ 1 min. */
 export const DSKIN_THOUGHT_MIN_MS = 30 * 1000
 export const DSKIN_THOUGHT_MAX_MS = 90 * 1000
 
@@ -624,6 +624,10 @@ class PixelPet {
   private setState(state: PetState): void {
     this.state = state
     this.el.dataset.petState = state
+    // housekeeping: pose-only attributes must not outlive their state, or the
+    // stale `data-pet-climb`/`data-pet-hang` would mis-position bubbles/markers
+    if (state !== 'climb') delete this.el.dataset.petClimb
+    if (state !== 'hang') delete this.el.dataset.petHang
   }
 
   /** Mark this cat as the currently-selected one (for the type switcher). */
@@ -958,7 +962,7 @@ class CatManager {
     this.scheduleThought()
   }
 
-  /** Occasionally (mean ≈ 30 min) a random cat shares a piece of wisdom. */
+  /** Occasionally (mean ≈ 1 min) a random cat shares a piece of wisdom. */
   private scheduleThought(): void {
     this.thoughtTimer = window.setTimeout(
       () => this.showThought(),

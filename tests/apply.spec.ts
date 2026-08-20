@@ -267,10 +267,13 @@ describe('DSKIN skin apply', () => {
     pet.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 100, clientY: 10 }))
     pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100, clientY: 5 }))
     expect(pet.dataset.petState).toBe('hang')
+    expect(pet.dataset.petHang).toBe('1')
     // drag down beyond the stick window, then release → it drops, not stuck
     pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100, clientY: 40 }))
     pet.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     expect(pet.dataset.petState).not.toBe('hang')
+    // pose-only attributes are cleaned up when the pose ends
+    expect(pet.dataset.petHang).toBeUndefined()
     await fiber.dispose()
     fiber = undefined
   })

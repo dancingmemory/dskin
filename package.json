@@ -1,7 +1,7 @@
 {
   "name": "dskin",
   "description": "DSKIN - cartoon pixel kittens for DeepSeek Harness (DSH): 1-4 random kittens spawn each session, they play together, you can pet them (hearts) and drag them around. Original UI untouched.",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "keywords": [
     "dsh-plugin",
     "deepseek-harness",
