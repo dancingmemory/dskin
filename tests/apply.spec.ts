@@ -55,7 +55,7 @@ describe('DSKIN wisdom pool', () => {
     }
   })
 
-  it('kittens occasionally share a thought (~5 min average)', async () => {
+  it('kittens occasionally share a thought (~1 min average)', async () => {
     setThoughtDelay(10, 30)
     fiber = await mount()
     try {
@@ -74,7 +74,33 @@ describe('DSKIN wisdom pool', () => {
     }
   }, 15000)
 
-  it('thought interval averages ~5 minutes', () => {
+  it('posed cats (climbing) do not share thoughts', async () => {
+    setThoughtDelay(10, 30)
+    fiber = await mount()
+    try {
+      const pet = document.body.querySelector(PET_SELECTOR) as HTMLElement
+      // force a wall-climb via the drag path
+      pet.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 100, clientY: 874 }))
+      pet.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 104, clientY: 1600 }))
+      pet.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+      expect(pet.dataset.petState).toBe('climb')
+      // a short thought interval is long past → but climbing cats must stay quiet
+      await new Promise((r) => setTimeout(r, 300))
+      const thinking = document.body.querySelector('[class*="pixelPet"][data-pet-thinking="1"]')
+      // the climbing cat itself never shows a quote (another idle cat might)
+      expect(pet.dataset.petThinking).toBeUndefined()
+      // and a bubble never sits on the wall-climber
+      const quoteOnClimber = pet.querySelector('[class*="pixelPetQuote"]')
+      expect(quoteOnClimber).toBeNull()
+      void thinking
+    } finally {
+      await fiber.dispose()
+      fiber = undefined
+      setThoughtDelay(DSKIN_THOUGHT_MIN_MS, DSKIN_THOUGHT_MAX_MS)
+    }
+  }, 15000)
+
+  it('thought interval averages ~1 minute', () => {
     const avg = (DSKIN_THOUGHT_MIN_MS + DSKIN_THOUGHT_MAX_MS) / 2
     expect(avg).toBeGreaterThan(50 * 1000)
     expect(avg).toBeLessThan(70 * 1000)

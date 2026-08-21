@@ -64,18 +64,20 @@
   animation: pet-bounce 0.4s steps(3, end) infinite;
 }
 
-/* wall-climbing: the cat clings sideways against the edge (90° pose) */
+/* wall-climbing: the cat clings sideways against the edge (90° pose). The
+   sprite is nudged ~5px toward the wall so its paws press against the frame
+   instead of floating a few pixels away from it. */
 .pixelPet[data-pet-state='climb'] .pixelPetSprite {
   animation: none;
 }
 
 .pixelPet[data-pet-state='climb'][data-pet-climb='-1'] .pixelPetSprite {
-  transform: rotate(90deg);
+  transform: translateX(-5px) rotate(90deg);
   transform-origin: center center;
 }
 
 .pixelPet[data-pet-state='climb'][data-pet-climb='1'] .pixelPetSprite {
-  transform: rotate(-90deg);
+  transform: translateX(5px) rotate(-90deg);
   transform-origin: center center;
 }
 

@@ -331,8 +331,10 @@ class PixelPet {
   private climbUntil = 0
   private lastClimbAt = 0
 
-  /* stuck watchdog */
+  /* stuck watchdog: tracks cumulative drift so slow-but-moving cats (a 0.4px
+     per-frame walk is normal) are never mistaken for stuck ones */
   private lastPosChangedAt = 0
+  private driftAccum = 0
   private lastPosX = 0
   private lastPosY = 0
 
@@ -448,6 +450,11 @@ class PixelPet {
     return this.leaveUntil > now || this.state === 'return'
   }
 
+  /** Whether the cat is in a pose that must not be interrupted by play. */
+  isPosed(): boolean {
+    return this.state === 'climb' || this.state === 'hang'
+  }
+
   /** Whether the cat is currently held by the pointer. */
   isDragging(): boolean {
     return this.dragging
@@ -474,6 +481,8 @@ class PixelPet {
     this.returnToY = zone.bottom
     this.returnT = 0
     this.setState('return')
+    this.lastPosChangedAt = performance.now()
+    this.driftAccum = 0
   }
 
   /**
@@ -491,6 +500,8 @@ class PixelPet {
     this.el.dataset.petClimb = String(this.climbSide)
     this.el.style.left = `${Math.round(this.x)}px`
     this.setState('climb')
+    this.lastPosChangedAt = performance.now()
+    this.driftAccum = 0
     meowClimb()
   }
 
@@ -505,6 +516,7 @@ class PixelPet {
     this.sprite.innerHTML = this.spec.frames.idle
     this.nextWalkAt = performance.now() + rand(500, 1500)
     this.lastPosChangedAt = performance.now()
+    this.driftAccum = 0
     this.nextBubbleAt = performance.now() + 1500
   }
 
@@ -673,12 +685,16 @@ class PixelPet {
     }
 
     // stuck watchdog: a moving cat that hasn't progressed for a while gets
-    // repaired back to the bottom edge (no frozen kittens, ever)
+    // repaired back to the bottom edge (no frozen kittens, ever). Movement is
+    // measured cumulatively — a walker advances < 1px per frame, so a per-frame
+    // threshold would false-positive and teleport healthy cats around.
     if (this.state === 'walk' || this.state === 'climb' || this.state === 'return') {
-      if (Math.abs(this.x - this.lastPosX) + Math.abs(this.y - this.lastPosY) > 1) {
+      this.driftAccum += Math.abs(this.x - this.lastPosX) + Math.abs(this.y - this.lastPosY)
+      this.lastPosX = this.x
+      this.lastPosY = this.y
+      if (this.driftAccum > 2) {
+        this.driftAccum = 0
         this.lastPosChangedAt = now
-        this.lastPosX = this.x
-        this.lastPosY = this.y
       } else if (now - this.lastPosChangedAt > STUCK_WATCHDOG_MS) {
         this.repair()
       }
@@ -703,9 +719,11 @@ class PixelPet {
     }
 
     if (this.state === 'climb') {
-      // wall-climbing: slow vertical creep on the side edge, long-term stay
+      // wall-climbing: vertical creep on the side edge. It climbs upward by
+      // default and only occasionally peeks back down, so it regularly makes
+      // it to the top and turns into a hanging cat.
       const zone = this.zone()
-      this.y += this.climbDir * this.spec.speed * 0.5 * dt
+      this.y += this.climbDir * this.spec.speed * dt
       if (this.climbDir === -1 && this.y <= HANG_PIN_Y + 8) {
         // climbed to the top → become a hanging cat (long-term stay up there)
         this.y = HANG_PIN_Y
@@ -719,8 +737,13 @@ class PixelPet {
         this.climbDir = -1
       }
       if (now >= this.climbFlipAt) {
-        this.climbDir = this.climbDir === 1 ? -1 : 1
-        this.climbFlipAt = now + rand(2500, 6000)
+        // almost always keep climbing up; only rarely glance back down
+        if (Math.random() < 0.12 && this.climbDir === -1) {
+          this.climbDir = 1
+        } else {
+          this.climbDir = -1
+        }
+        this.climbFlipAt = now + rand(10000, 16000)
       }
       this.el.style.top = `${Math.round(this.y)}px`
       this.el.style.left = `${Math.round(this.x)}px`
@@ -971,7 +994,9 @@ class CatManager {
   }
 
   private showThought(): void {
-    const candidates = this.cats.filter((c) => !c.isDragging() && !c.isHanging())
+    // a posed cat (climbing / hanging) is mid-motion and looks odd holding a
+    // bubble — only idle/walk/drag cats share their wisdom
+    const candidates = this.cats.filter((c) => !c.isDragging() && !c.isPosed())
     if (candidates.length > 0) {
       const cat = candidates[Math.floor(rand(0, candidates.length))]
       cat.showQuote(QUOTES[Math.floor(rand(0, QUOTES.length))] ?? '喵。')
@@ -1069,6 +1094,9 @@ class CatManager {
       for (let j = i + 1; j < this.cats.length; j++) {
         const a = this.cats[i]
         const b = this.cats[j]
+        // posed cats (climbing / hanging) can't play — flipping a dangling or
+        // wall-clinging cat's head around looks broken, so skip them entirely
+        if (a.isPosed() || b.isPosed()) continue
         if (a.isBusy(now) || a.isDragging() || b.isBusy(now) || b.isDragging()) continue
         const dist = Math.abs(a.centerX() - b.centerX())
         if (dist < INTERACT_DIST) {
